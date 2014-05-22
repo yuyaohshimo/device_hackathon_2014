@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-#include "base/CCNS.h"
+#include "CCNS.h"
 #include <string>
 #include <vector>
 #include <string.h>
@@ -144,9 +144,9 @@ Rect RectFromString(const std::string& str)
     return result;
 }
 
-Vec2 PointFromString(const std::string& str)
+Point PointFromString(const std::string& str)
 {
-    Vec2 ret = Vec2::ZERO;
+    Point ret = Point::ZERO;
 
     do 
     {
@@ -156,7 +156,7 @@ Vec2 PointFromString(const std::string& str)
         float x = (float) atof(strs[0].c_str());
         float y = (float) atof(strs[1].c_str());
 
-        ret = Vec2(x, y);
+        ret = Point(x, y);
     } while (0);
 
     return ret;

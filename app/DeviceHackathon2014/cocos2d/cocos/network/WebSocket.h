@@ -30,7 +30,7 @@
 #ifndef __CC_WEBSOCKET_H__
 #define __CC_WEBSOCKET_H__
 
-#include "base/CCPlatformMacros.h"
+#include "CCPlatformMacros.h"
 #include "CCStdC.h"
 #include <list>
 #include <string>

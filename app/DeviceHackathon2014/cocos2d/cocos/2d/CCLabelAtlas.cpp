@@ -25,22 +25,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 #include "CCLabelAtlas.h"
-#include "renderer/CCTextureAtlas.h"
-#include "2d/CCDrawingPrimitives.h"
+#include "CCTextureAtlas.h"
+#include "CCTextureCache.h"
+#include "CCDrawingPrimitives.h"
+#include "ccConfig.h"
+#include "CCShaderCache.h"
+#include "CCGLProgram.h"
+#include "ccGLStateCache.h"
+#include "CCDirector.h"
+#include "TransformUtils.h"
 #include "platform/CCFileUtils.h"
-#include "base/ccConfig.h"
-#include "base/CCDirector.h"
-#include "renderer/CCTextureCache.h"
-#include "renderer/CCGLProgramCache.h"
-#include "renderer/CCGLProgram.h"
-#include "renderer/ccGLStateCache.h"
-#include "math/TransformUtils.h"
-
+// external
+#include "kazmath/GL/matrix.h"
 #include "deprecated/CCString.h"
 
 #if CC_LABELATLAS_DEBUG_DRAW
 #include "renderer/CCRenderer.h"
-#include "base/CCDirector.h"
+#include "CCDirector.h"
 #endif
 
 NS_CC_BEGIN
@@ -249,7 +250,7 @@ void LabelAtlas::updateColor()
 
 //CCLabelAtlas - draw
 #if CC_LABELATLAS_DEBUG_DRAW
-void LabelAtlas::draw(Renderer *renderer, const Mat4 &transform, bool transformUpdated)
+void LabelAtlas::draw(Renderer *renderer, const kmMat4 &transform, bool transformUpdated)
 {
     AtlasNode::draw(renderer, transform, transformUpdated);
 
@@ -258,25 +259,24 @@ void LabelAtlas::draw(Renderer *renderer, const Mat4 &transform, bool transformU
     renderer->addCommand(&_customDebugDrawCommand);
 }
 
-void LabelAtlas::drawDebugData(const Mat4& transform, bool transformUpdated)
+void LabelAtlas::drawDebugData(const kmMat4& transform, bool transformUpdated)
 {
-    Director* director = Director::getInstance();
-    director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, transform);
+    kmGLPushMatrix();
+    kmGLLoadMatrix(&transform);
 
     auto size = getContentSize();
 
-    Vec2 vertices[4]=
+    Point vertices[4]=
     {
-        Vec2::ZERO,
-        Vec2(size.width, 0),
-        Vec2(size.width, size.height),
-        Vec2(0, size.height)
+        Point::ZERO,
+        Point(size.width, 0),
+        Point(size.width, size.height),
+        Point(0, size.height)
     };
 
     DrawPrimitives::drawPoly(vertices, 4, true);
 
-    director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    kmGLPopMatrix();
 }
 #endif
 

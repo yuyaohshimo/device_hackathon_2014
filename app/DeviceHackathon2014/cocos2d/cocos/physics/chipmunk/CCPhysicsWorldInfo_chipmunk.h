@@ -25,15 +25,15 @@
 #ifndef __CCPHYSICS_WORLD_INFO_CHIPMUNK_H__
 #define __CCPHYSICS_WORLD_INFO_CHIPMUNK_H__
 
-#include "base/ccConfig.h"
+#include "ccConfig.h"
 #if CC_USE_PHYSICS
 
 #include <vector>
 #include "chipmunk.h"
-#include "base/CCPlatformMacros.h"
-#include "math/CCGeometry.h"
+#include "CCPlatformMacros.h"
+#include "CCGeometry.h"
 NS_CC_BEGIN
-typedef Vec2 Vect;
+typedef Point Vect;
 class PhysicsBodyInfo;
 class PhysicsJointInfo;
 class PhysicsShapeInfo;

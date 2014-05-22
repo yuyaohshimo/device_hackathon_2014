@@ -56,7 +56,7 @@ public:
      *
      * @return finded result.
      */
-    static Widget* seekWidgetByName(Widget* root, const std::string& name);
+    static Widget* seekWidgetByName(Widget* root, const char* name);
     
     /*temp action*/
     static Widget* seekActionWidgetByActionTag(Widget* root, int tag);

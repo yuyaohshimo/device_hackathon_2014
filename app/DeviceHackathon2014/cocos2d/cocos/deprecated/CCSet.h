@@ -27,8 +27,8 @@ THE SOFTWARE.
 #define __CC_SET_H__
 
 #include <set>
-#include "base/CCRef.h"
-#include "base/CCDataVisitor.h"
+#include "CCRef.h"
+#include "CCDataVisitor.h"
 
 NS_CC_BEGIN
 

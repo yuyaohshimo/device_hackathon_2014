@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "base/CCRef.h"
+#include "CCRef.h"
 #include "CCBSequenceProperty.h"
 
 namespace cocosbuilder {

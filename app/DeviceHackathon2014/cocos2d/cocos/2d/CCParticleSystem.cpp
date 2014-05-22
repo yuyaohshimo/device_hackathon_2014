@@ -42,21 +42,21 @@ THE SOFTWARE.
 //  cocos2d uses a another approach, but the results are almost identical. 
 //
 
-#include "2d/CCParticleSystem.h"
+#include "CCParticleSystem.h"
 
 #include <string>
 
-#include "2d/CCParticleBatchNode.h"
-#include "renderer/CCTextureAtlas.h"
+#include "CCParticleBatchNode.h"
+#include "ccTypes.h"
+#include "CCTextureCache.h"
+#include "CCTextureAtlas.h"
+#include "base64.h"
 #include "platform/CCFileUtils.h"
 #include "platform/CCImage.h"
-#include "base/ccTypes.h"
-#include "base/base64.h"
-#include "base/ZipUtils.h"
-#include "base/CCDirector.h"
-#include "base/CCProfiling.h"
-#include "renderer/CCTextureCache.h"
-
+#include "ZipUtils.h"
+#include "CCDirector.h"
+#include "CCProfiling.h"
+// opengl
 #include "CCGL.h"
 
 using namespace std;
@@ -97,8 +97,8 @@ ParticleSystem::ParticleSystem()
 , _isActive(true)
 , _particleCount(0)
 , _duration(0)
-, _sourcePosition(Vec2::ZERO)
-, _posVar(Vec2::ZERO)
+, _sourcePosition(Point::ZERO)
+, _posVar(Point::ZERO)
 , _life(0)
 , _lifeVar(0)
 , _angle(0)
@@ -117,10 +117,10 @@ ParticleSystem::ParticleSystem()
 , _texture(nullptr)
 , _blendFunc(BlendFunc::ALPHA_PREMULTIPLIED)
 , _opacityModifyRGB(false)
-, _yCoordFlipped(1)
+, _yCoordFlipped(0)
 , _positionType(PositionType::FREE)
 {
-    modeA.gravity = Vec2::ZERO;
+    modeA.gravity = Point::ZERO;
     modeA.speed = 0;
     modeA.speedVar = 0;
     modeA.tangentialAccel = 0;
@@ -257,7 +257,7 @@ bool ParticleSystem::initWithDictionary(ValueMap& dictionary, const std::string&
             // position
             float x = dictionary["sourcePositionx"].asFloat();
             float y = dictionary["sourcePositiony"].asFloat();
-            this->setPosition( Vec2(x,y) );            
+            this->setPosition( Point(x,y) );            
             _posVar.x = dictionary["sourcePositionVariancex"].asFloat();
             _posVar.y = dictionary["sourcePositionVariancey"].asFloat();
 
@@ -387,9 +387,9 @@ bool ParticleSystem::initWithDictionary(ValueMap& dictionary, const std::string&
                 {
                     setTexture(tex);
                 }
-                else if( dictionary.find("textureImageData") != dictionary.end() )
+                else
                 {                        
-                    std::string textureData = dictionary.at("textureImageData").asString();
+                    std::string textureData = dictionary["textureImageData"].asString();
                     CCASSERT(!textureData.empty(), "");
                     
                     auto dataLen = textureData.size();
@@ -416,10 +416,12 @@ bool ParticleSystem::initWithDictionary(ValueMap& dictionary, const std::string&
                     }
                 }
                 
-                _yCoordFlipped = dictionary.find("yCoordFlipped") == dictionary.end() ? 1 : dictionary.at("yCoordFlipped").asInt();
-
-                if( !this->_texture)
-                    CCLOGWARN("cocos2d: Warning: ParticleSystemQuad system without a texture");
+                if (!_configName.empty())
+                {
+                    _yCoordFlipped = dictionary["yCoordFlipped"].asInt();
+                }
+                
+                CCASSERT( this->_texture != nullptr, "CCParticleSystem: error loading the texture");
             }
             ret = true;
         }
@@ -560,7 +562,7 @@ void ParticleSystem::initParticle(tParticle* particle)
     // position
     if (_positionType == PositionType::FREE)
     {
-        particle->startPos = this->convertToWorldSpace(Vec2::ZERO);
+        particle->startPos = this->convertToWorldSpace(Point::ZERO);
     }
     else if (_positionType == PositionType::RELATIVE)
     {
@@ -573,7 +575,7 @@ void ParticleSystem::initParticle(tParticle* particle)
     // Mode Gravity: A
     if (_emitterMode == Mode::GRAVITY)
     {
-        Vec2 v(cosf( a ), sinf( a ));
+        Point v(cosf( a ), sinf( a ));
         float s = modeA.speed + modeA.speedVar * CCRANDOM_MINUS1_1();
 
         // direction
@@ -679,10 +681,10 @@ void ParticleSystem::update(float dt)
 
     _particleIdx = 0;
 
-    Vec2 currentPosition = Vec2::ZERO;
+    Point currentPosition = Point::ZERO;
     if (_positionType == PositionType::FREE)
     {
-        currentPosition = this->convertToWorldSpace(Vec2::ZERO);
+        currentPosition = this->convertToWorldSpace(Point::ZERO);
     }
     else if (_positionType == PositionType::RELATIVE)
     {
@@ -702,13 +704,13 @@ void ParticleSystem::update(float dt)
                 // Mode A: gravity, direction, tangential accel & radial accel
                 if (_emitterMode == Mode::GRAVITY)
                 {
-                    Vec2 tmp, radial, tangential;
+                    Point tmp, radial, tangential;
 
-                    radial = Vec2::ZERO;
+                    radial = Point::ZERO;
                     // radial acceleration
                     if (p->pos.x || p->pos.y)
                     {
-                        radial = p->pos.getNormalized();
+                        radial = p->pos.normalize();
                     }
                     tangential = radial;
                     radial = radial * p->modeA.radialAccel;
@@ -723,12 +725,21 @@ void ParticleSystem::update(float dt)
                     tmp = radial + tangential + modeA.gravity;
                     tmp = tmp * dt;
                     p->modeA.dir = p->modeA.dir + tmp;
-                    
-                    // this is cocos2d-x v3.0
-//                    if (_configName.length()>0 && _yCoordFlipped != -1)
-
-                    // this is cocos2d-x v3.0
-                    tmp = p->modeA.dir * dt * _yCoordFlipped;
+					if (_configName.length()>0)
+					{
+						if (_yCoordFlipped == -1)
+						{
+							 tmp = p->modeA.dir * dt;
+						}
+						else
+						{
+							 tmp = p->modeA.dir * -dt;
+						}
+					}
+					else
+					{
+						 tmp = p->modeA.dir * dt;
+					}
                     p->pos = p->pos + tmp;
                 }
 
@@ -741,7 +752,10 @@ void ParticleSystem::update(float dt)
 
                     p->pos.x = - cosf(p->modeB.angle) * p->modeB.radius;
                     p->pos.y = - sinf(p->modeB.angle) * p->modeB.radius;
-                    p->pos.y *= _yCoordFlipped;
+                    if (_yCoordFlipped == 1)
+                    {
+                      p->pos.y = -p->pos.y;
+                    }
 				}
 
                 // color
@@ -761,11 +775,11 @@ void ParticleSystem::update(float dt)
                 // update values in quad
                 //
 
-                Vec2    newPos;
+                Point    newPos;
 
                 if (_positionType == PositionType::FREE || _positionType == PositionType::RELATIVE)
                 {
-                    Vec2 diff = currentPosition - p->startPos;
+                    Point diff = currentPosition - p->startPos;
                     newPos = p->pos - diff;
                 } 
                 else
@@ -832,7 +846,7 @@ void ParticleSystem::updateWithNoTime(void)
     this->update(0.0f);
 }
 
-void ParticleSystem::updateQuadWithParticle(tParticle* particle, const Vec2& newPosition)
+void ParticleSystem::updateQuadWithParticle(tParticle* particle, const Point& newPosition)
 {
     CC_UNUSED_PARAM(particle);
     CC_UNUSED_PARAM(newPosition);
@@ -967,13 +981,13 @@ bool ParticleSystem::getRotationIsDir() const
     return modeA.rotationIsDir;
 }
 
-void ParticleSystem::setGravity(const Vec2& g)
+void ParticleSystem::setGravity(const Point& g)
 {
     CCASSERT(_emitterMode == Mode::GRAVITY, "Particle Mode should be Gravity");
     modeA.gravity = g;
 }
 
-const Vec2& ParticleSystem::getGravity()
+const Point& ParticleSystem::getGravity()
 {
     CCASSERT(_emitterMode == Mode::GRAVITY, "Particle Mode should be Gravity");
     return modeA.gravity;

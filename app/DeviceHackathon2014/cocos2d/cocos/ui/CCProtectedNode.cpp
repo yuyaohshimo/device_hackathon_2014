@@ -28,12 +28,12 @@
 
 #include "CCProtectedNode.h"
 
-#include "base/CCDirector.h"
+#include "kazmath/GL/matrix.h"
 
 #if CC_USE_PHYSICS
-#include "physics/CCPhysicsBody.h"
+#include "CCPhysicsBody.h"
 #endif
-#include "2d/CCScene.h"
+#include "CCScene.h"
 
 NS_CC_BEGIN
 
@@ -95,23 +95,26 @@ void ProtectedNode::addProtectedChild(Node *child, int zOrder, int tag)
     
     this->insertProtectedChild(child, zOrder);
     
-    child->setTag(tag);
-    
-    child->setParent(this);
-    child->setOrderOfArrival(s_globalOrderOfArrival++);
-    
 #if CC_USE_PHYSICS
-    // Recursive add children with which have physics body.
-    for (Node* node = this; node != nullptr; node = node->getParent())
+    if (child->getPhysicsBody() != nullptr)
     {
-        Scene* scene = dynamic_cast<Scene*>(node);
-        if (scene != nullptr && scene->getPhysicsWorld() != nullptr)
+        child->getPhysicsBody()->setPosition(this->convertToWorldSpace(child->getPosition()));
+    }
+    
+    for (Node* node = this->getParent(); node != nullptr; node = node->getParent())
+    {
+        if (dynamic_cast<Scene*>(node) != nullptr)
         {
-            scene->addChildToPhysicsWorld(child);
+            (dynamic_cast<Scene*>(node))->addChildToPhysicsWorld(child);
             break;
         }
     }
 #endif
+    
+    child->setTag(tag);
+    
+    child->setParent(this);
+    child->setOrderOfArrival(s_globalOrderOfArrival++);
     
     if( _running )
     {
@@ -268,7 +271,7 @@ void ProtectedNode::reorderProtectedChild(cocos2d::Node *child, int localZOrder)
     child->_setLocalZOrder(localZOrder);
 }
 
-void ProtectedNode::visit(Renderer* renderer, const Mat4 &parentTransform, bool parentTransformUpdated)
+void ProtectedNode::visit(Renderer* renderer, const kmMat4 &parentTransform, bool parentTransformUpdated)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -283,12 +286,10 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4 &parentTransform, bool 
     
     
     // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
+    // To ease the migration to v3.0, we still support the kmGL stack,
     // but it is deprecated and your code should not rely on it
-    Director* director = Director::getInstance();
-    CCASSERT(nullptr != director, "Director is null when seting matrix stack");
-    director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    kmGLPushMatrix();
+    kmGLLoadMatrix(&_modelViewTransform);
     
     int i = 0;      // used by _children
     int j = 0;      // used by _protectedChildren
@@ -336,7 +337,7 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4 &parentTransform, bool 
     // reset for next frame
     _orderOfArrival = 0;
     
-    director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    kmGLPopMatrix();
 }
 
 void ProtectedNode::onEnter()

@@ -36,16 +36,20 @@
 #include "extensions/ExtensionMacros.h"
 #include "CCEditBoxImpl.h"
 
+@interface CCCustomNSTextField : NSTextField
+{
+}
+
+@end
 
 @interface CCEditBoxImplMac : NSObject <NSTextFieldDelegate>
 {
+    CCCustomNSTextField* textField_;
     void* editBox_;
     BOOL editState_;
-    NSMutableDictionary* placeholderAttributes_;
 }
 
 @property(nonatomic, retain) NSTextField* textField;
-@property(nonatomic, retain) NSSecureTextField* secureTextField;
 @property(nonatomic, retain) NSMutableDictionary* placeholderAttributes;
 @property(nonatomic, readonly, getter = isEditState) BOOL editState;
 @property(nonatomic, assign) void* editBox;
@@ -92,10 +96,10 @@ public:
     virtual void setText(const char* pText);
     virtual const char* getText(void);
     virtual void setPlaceHolder(const char* pText);
-    virtual void setPosition(const Vec2& pos);
+    virtual void setPosition(const Point& pos);
     virtual void setVisible(bool visible);
     virtual void setContentSize(const Size& size);
-    virtual void setAnchorPoint(const Vec2& anchorPoint);
+    virtual void setAnchorPoint(const Point& anchorPoint);
     /**
      * @js NA
      * @lua NA
@@ -111,11 +115,11 @@ public:
      */
     virtual void onEnter(void);
 private:
-    NSPoint    convertDesignCoordToScreenCoord(const Vec2& designCoord, bool bInRetinaMode);
+    NSPoint    convertDesignCoordToScreenCoord(const Point& designCoord, bool bInRetinaMode);
     void       adjustTextFieldPosition();
     Size     _contentSize;
-    Vec2    _position;
-    Vec2    _anchorPoint;
+    Point    _position;
+    Point    _anchorPoint;
     int        _maxTextLength;
     bool       _inRetinaMode;
     CCEditBoxImplMac*  _sysEdit;

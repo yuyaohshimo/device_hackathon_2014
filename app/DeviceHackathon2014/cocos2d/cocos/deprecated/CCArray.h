@@ -31,13 +31,13 @@ THE SOFTWARE.
 #if CC_USE_ARRAY_VECTOR
 #include <vector>
 #include <algorithm>
-#include "base/CCRef.h"
-#include "base/ccMacros.h"
+#include "CCRef.h"
+#include "ccMacros.h"
 #else
-#include "base/ccCArray.h"
+#include "ccCArray.h"
 #endif
 
-#include "base/CCDataVisitor.h"
+#include "CCDataVisitor.h"
 
 #if CC_USE_ARRAY_VECTOR
 /**

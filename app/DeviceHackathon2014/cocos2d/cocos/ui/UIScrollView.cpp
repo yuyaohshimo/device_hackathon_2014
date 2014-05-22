@@ -65,21 +65,21 @@ const Size& ScrollInnerContainer::getLayoutSize()
 
 static const float AUTOSCROLLMAXSPEED = 1000.0f;
 
-const Vec2 SCROLLDIR_UP = Vec2(0.0f, 1.0f);
-const Vec2 SCROLLDIR_DOWN = Vec2(0.0f, -1.0f);
-const Vec2 SCROLLDIR_LEFT = Vec2(-1.0f, 0.0f);
-const Vec2 SCROLLDIR_RIGHT = Vec2(1.0f, 0.0f);
+const Point SCROLLDIR_UP = Point(0.0f, 1.0f);
+const Point SCROLLDIR_DOWN = Point(0.0f, -1.0f);
+const Point SCROLLDIR_LEFT = Point(-1.0f, 0.0f);
+const Point SCROLLDIR_RIGHT = Point(1.0f, 0.0f);
     
 IMPLEMENT_CLASS_GUI_INFO(ScrollView)
 
 ScrollView::ScrollView():
 _innerContainer(nullptr),
-_direction(Direction::VERTICAL),
-_touchBeganPoint(Vec2::ZERO),
-_touchMovedPoint(Vec2::ZERO),
-_touchEndedPoint(Vec2::ZERO),
-_touchMovingPoint(Vec2::ZERO),
-_autoScrollDir(Vec2::ZERO),
+_direction(SCROLLVIEW_DIR_VERTICAL),
+_touchBeganPoint(Point::ZERO),
+_touchMovedPoint(Point::ZERO),
+_touchEndedPoint(Point::ZERO),
+_touchMovingPoint(Point::ZERO),
+_autoScrollDir(Point::ZERO),
 _topBoundary(0.0f),
 _bottomBoundary(0.0f),
 _leftBoundary(0.0f),
@@ -94,10 +94,10 @@ _autoScrollOriginalSpeed(0.0f),
 _autoScrollAcceleration(-1000.0f),
 _isAutoScrollSpeedAttenuated(false),
 _needCheckAutoScrollDestination(false),
-_autoScrollDestination(Vec2::ZERO),
+_autoScrollDestination(Point::ZERO),
 _bePressed(false),
 _slidTime(0.0f),
-_moveChildPoint(Vec2::ZERO),
+_moveChildPoint(Point::ZERO),
 _childFocusCancelOffset(5.0f),
 _leftBounceNeeded(false),
 _topBounceNeeded(false),
@@ -105,12 +105,11 @@ _rightBounceNeeded(false),
 _bottomBounceNeeded(false),
 _bounceEnabled(false),
 _bouncing(false),
-_bounceDir(Vec2::ZERO),
+_bounceDir(Point::ZERO),
 _bounceOriginalSpeed(0.0f),
 _inertiaScrollEnabled(true),
 _scrollViewEventListener(nullptr),
-_scrollViewEventSelector(nullptr),
-_eventCallback(nullptr)
+_scrollViewEventSelector(nullptr)
 {
 }
 
@@ -142,6 +141,7 @@ bool ScrollView::init()
 {
     if (Layout::init())
     {
+        setTouchEnabled(true);
         setClippingEnabled(true);
         _innerContainer->setTouchEnabled(false);
         return true;
@@ -173,7 +173,7 @@ void ScrollView::onSizeChanged()
     float innerSizeWidth = MAX(orginInnerSizeWidth, _size.width);
     float innerSizeHeight = MAX(orginInnerSizeHeight, _size.height);
     _innerContainer->setSize(Size(innerSizeWidth, innerSizeHeight));
-    _innerContainer->setPosition(Vec2(0, _size.height - _innerContainer->getSize().height));
+    _innerContainer->setPosition(Point(0, _size.height - _innerContainer->getSize().height));
 }
 
 void ScrollView::setInnerContainerSize(const Size &size)
@@ -201,14 +201,14 @@ void ScrollView::setInnerContainerSize(const Size &size)
 
     switch (_direction)
     {
-        case Direction::VERTICAL:
+        case SCROLLVIEW_DIR_VERTICAL:
         {
             Size newInnerSize = _innerContainer->getSize();
             float offset = originalInnerSize.height - newInnerSize.height;
             scrollChildren(0.0f, offset);
             break;
         }
-        case Direction::HORIZONTAL:
+        case SCROLLVIEW_DIR_HORIZONTAL:
         {
             if (_innerContainer->getRightInParent() <= _size.width)
             {
@@ -218,7 +218,7 @@ void ScrollView::setInnerContainerSize(const Size &size)
             }
             break;
         }
-        case Direction::BOTH:
+        case SCROLLVIEW_DIR_BOTH:
         {
             Size newInnerSize = _innerContainer->getSize();
             float offsetY = originalInnerSize.height - newInnerSize.height;
@@ -235,19 +235,19 @@ void ScrollView::setInnerContainerSize(const Size &size)
     }
     if (_innerContainer->getLeftInParent() > 0.0f)
     {
-        _innerContainer->setPosition(Vec2(_innerContainer->getAnchorPoint().x * _innerContainer->getSize().width, _innerContainer->getPosition().y));
+        _innerContainer->setPosition(Point(_innerContainer->getAnchorPoint().x * _innerContainer->getSize().width, _innerContainer->getPosition().y));
     }
     if (_innerContainer->getRightInParent() < _size.width)
     {
-         _innerContainer->setPosition(Vec2(_size.width - ((1.0f - _innerContainer->getAnchorPoint().x) * _innerContainer->getSize().width), _innerContainer->getPosition().y));
+         _innerContainer->setPosition(Point(_size.width - ((1.0f - _innerContainer->getAnchorPoint().x) * _innerContainer->getSize().width), _innerContainer->getPosition().y));
     }
     if (_innerContainer->getPosition().y > 0.0f)
     {
-        _innerContainer->setPosition(Vec2(_innerContainer->getPosition().x, _innerContainer->getAnchorPoint().y * _innerContainer->getSize().height));
+        _innerContainer->setPosition(Point(_innerContainer->getPosition().x, _innerContainer->getAnchorPoint().y * _innerContainer->getSize().height));
     }
     if (_innerContainer->getTopInParent() < _size.height)
     {
-        _innerContainer->setPosition(Vec2(_innerContainer->getPosition().x, _size.height - (1.0f - _innerContainer->getAnchorPoint().y) * _innerContainer->getSize().height));
+        _innerContainer->setPosition(Point(_innerContainer->getPosition().x, _size.height - (1.0f - _innerContainer->getAnchorPoint().y) * _innerContainer->getSize().height));
     }
 }
 
@@ -301,19 +301,19 @@ ssize_t ScrollView::getChildrenCount() const
     return _innerContainer->getChildrenCount();
 }
     
-Node* ScrollView::getChildByTag(int tag) const
+Node* ScrollView::getChildByTag(int tag)
 {
     return _innerContainer->getChildByTag(tag);
 }
     
-Widget* ScrollView::getChildByName(const std::string& name)
+Widget* ScrollView::getChildByName(const char *name)
 {
     return _innerContainer->getChildByName(name);
 }
     
 void ScrollView::moveChildren(float offsetX, float offsetY)
 {
-    _moveChildPoint = _innerContainer->getPosition() + Vec2(offsetX, offsetY);
+    _moveChildPoint = _innerContainer->getPosition() + Point(offsetX, offsetY);
     _innerContainer->setPosition(_moveChildPoint);
 }
 
@@ -390,58 +390,58 @@ bool ScrollView::checkNeedBounce()
     {
         if (_topBounceNeeded && _leftBounceNeeded)
         {
-            Vec2 scrollVector = Vec2(0.0f, _size.height) - Vec2(_innerContainer->getLeftInParent(), _innerContainer->getTopInParent());
+            Point scrollVector = Point(0.0f, _size.height) - Point(_innerContainer->getLeftInParent(), _innerContainer->getTopInParent());
             float orSpeed = scrollVector.getLength()/(0.2f);
-            _bounceDir = scrollVector.getNormalized();
+            _bounceDir = scrollVector.normalize();
             startBounceChildren(orSpeed);
         }
         else if (_topBounceNeeded && _rightBounceNeeded)
         {
-            Vec2 scrollVector = Vec2(_size.width, _size.height) - Vec2(_innerContainer->getRightInParent(), _innerContainer->getTopInParent());
+            Point scrollVector = Point(_size.width, _size.height) - Point(_innerContainer->getRightInParent(), _innerContainer->getTopInParent());
             float orSpeed = scrollVector.getLength()/(0.2f);
-            _bounceDir = scrollVector.getNormalized();
+            _bounceDir = scrollVector.normalize();
             startBounceChildren(orSpeed);
         }
         else if (_bottomBounceNeeded && _leftBounceNeeded)
         {
-            Vec2 scrollVector = Vec2::ZERO - Vec2(_innerContainer->getLeftInParent(), _innerContainer->getBottomInParent());
+            Point scrollVector = Point::ZERO - Point(_innerContainer->getLeftInParent(), _innerContainer->getBottomInParent());
             float orSpeed = scrollVector.getLength()/(0.2f);
-            _bounceDir = scrollVector.getNormalized();
+            _bounceDir = scrollVector.normalize();
             startBounceChildren(orSpeed);
         }
         else if (_bottomBounceNeeded && _rightBounceNeeded)
         {
-            Vec2 scrollVector = Vec2(_size.width, 0.0f) - Vec2(_innerContainer->getRightInParent(), _innerContainer->getBottomInParent());
+            Point scrollVector = Point(_size.width, 0.0f) - Point(_innerContainer->getRightInParent(), _innerContainer->getBottomInParent());
             float orSpeed = scrollVector.getLength()/(0.2f);
-            _bounceDir = scrollVector.getNormalized();
+            _bounceDir = scrollVector.normalize();
             startBounceChildren(orSpeed);
         }
         else if (_topBounceNeeded)
         {
-            Vec2 scrollVector = Vec2(0.0f, _size.height) - Vec2(0.0f, _innerContainer->getTopInParent());
+            Point scrollVector = Point(0.0f, _size.height) - Point(0.0f, _innerContainer->getTopInParent());
             float orSpeed = scrollVector.getLength()/(0.2f);
-            _bounceDir = scrollVector.getNormalized();
+            _bounceDir = scrollVector.normalize();
             startBounceChildren(orSpeed);
         }
         else if (_bottomBounceNeeded)
         {
-            Vec2 scrollVector = Vec2::ZERO - Vec2(0.0f, _innerContainer->getBottomInParent());
+            Point scrollVector = Point::ZERO - Point(0.0f, _innerContainer->getBottomInParent());
             float orSpeed = scrollVector.getLength()/(0.2f);
-            _bounceDir = scrollVector.getNormalized();
+            _bounceDir = scrollVector.normalize();
             startBounceChildren(orSpeed);
         }
         else if (_leftBounceNeeded)
         {
-            Vec2 scrollVector = Vec2::ZERO - Vec2(_innerContainer->getLeftInParent(), 0.0f);
+            Point scrollVector = Point::ZERO - Point(_innerContainer->getLeftInParent(), 0.0f);
             float orSpeed = scrollVector.getLength()/(0.2f);
-            _bounceDir = scrollVector.getNormalized();
+            _bounceDir = scrollVector.normalize();
             startBounceChildren(orSpeed);
         }
         else if (_rightBounceNeeded)
         {
-            Vec2 scrollVector = Vec2(_size.width, 0.0f) - Vec2(_innerContainer->getRightInParent(), 0.0f);
+            Point scrollVector = Point(_size.width, 0.0f) - Point(_innerContainer->getRightInParent(), 0.0f);
             float orSpeed = scrollVector.getLength()/(0.2f);
-            _bounceDir = scrollVector.getNormalized();
+            _bounceDir = scrollVector.normalize();
             startBounceChildren(orSpeed);
         }
         return true;
@@ -509,7 +509,7 @@ void ScrollView::stopBounceChildren()
     _bottomBounceNeeded = false;
 }
 
-void ScrollView::startAutoScrollChildrenWithOriginalSpeed(const Vec2& dir, float v, bool attenuated, float acceleration)
+void ScrollView::startAutoScrollChildrenWithOriginalSpeed(const Point& dir, float v, bool attenuated, float acceleration)
 {
     stopAutoScrollChildren();
     _autoScrollDir = dir;
@@ -519,12 +519,12 @@ void ScrollView::startAutoScrollChildrenWithOriginalSpeed(const Vec2& dir, float
     _autoScrollAcceleration = acceleration;
 }
 
-void ScrollView::startAutoScrollChildrenWithDestination(const Vec2& des, float time, bool attenuated)
+void ScrollView::startAutoScrollChildrenWithDestination(const Point& des, float time, bool attenuated)
 {
     _needCheckAutoScrollDestination = false;
     _autoScrollDestination = des;
-    Vec2 dis = des - _innerContainer->getPosition();
-    Vec2 dir = dis.getNormalized();
+    Point dis = des - _innerContainer->getPosition();
+    Point dir = dis.normalize();
     float orSpeed = 0.0f;
     float acceleration = -1000.0f;
     if (attenuated)
@@ -540,25 +540,25 @@ void ScrollView::startAutoScrollChildrenWithDestination(const Vec2& des, float t
     startAutoScrollChildrenWithOriginalSpeed(dir, orSpeed, attenuated, acceleration);
 }
 
-void ScrollView::jumpToDestination(const Vec2 &des)
+void ScrollView::jumpToDestination(const Point &des)
 {
     float finalOffsetX = des.x;
     float finalOffsetY = des.y;
     switch (_direction)
     {
-        case Direction::VERTICAL:
+        case SCROLLVIEW_DIR_VERTICAL:
             if (des.y <= 0)
             {
                 finalOffsetY = MAX(des.y, _size.height - _innerContainer->getSize().height);
             }
             break;
-        case Direction::HORIZONTAL:
+        case SCROLLVIEW_DIR_HORIZONTAL:
             if (des.x <= 0)
             {
                 finalOffsetX = MAX(des.x, _size.width - _innerContainer->getSize().width);
             }
             break;
-        case Direction::BOTH:
+        case SCROLLVIEW_DIR_BOTH:
             if (des.y <= 0)
             {
                 finalOffsetY = MAX(des.y, _size.height - _innerContainer->getSize().height);
@@ -571,7 +571,7 @@ void ScrollView::jumpToDestination(const Vec2 &des)
         default:
             break;
     }
-    _innerContainer->setPosition(Vec2(finalOffsetX, finalOffsetY));
+    _innerContainer->setPosition(Point(finalOffsetX, finalOffsetY));
 }
 
 void ScrollView::stopAutoScrollChildren()
@@ -720,7 +720,7 @@ bool ScrollView::checkCustomScrollDestination(float* touchOffsetX, float* touchO
     bool scrollenabled = true;
     switch (_direction)
     {
-        case Direction::VERTICAL: // vertical
+        case SCROLLVIEW_DIR_VERTICAL: // vertical
         {
             if (_autoScrollDir.y > 0)
             {
@@ -742,7 +742,7 @@ bool ScrollView::checkCustomScrollDestination(float* touchOffsetX, float* touchO
             }
             break;
         }
-        case Direction::HORIZONTAL: // horizontal
+        case SCROLLVIEW_DIR_HORIZONTAL: // horizontal
         {
             if (_autoScrollDir.x > 0)
             {
@@ -764,7 +764,7 @@ bool ScrollView::checkCustomScrollDestination(float* touchOffsetX, float* touchO
             }
             break;
         }
-        case Direction::BOTH:
+        case SCROLLVIEW_DIR_BOTH:
         {
             if (*touchOffsetX > 0.0f && *touchOffsetY > 0.0f) // up right
             {
@@ -876,7 +876,7 @@ bool ScrollView::scrollChildren(float touchOffsetX, float touchOffsetY)
     scrollingEvent();
     switch (_direction)
     {
-        case Direction::VERTICAL: // vertical
+        case SCROLLVIEW_DIR_VERTICAL: // vertical
         {
             float realOffset = touchOffsetY;
             if (_bounceEnabled)
@@ -916,7 +916,7 @@ bool ScrollView::scrollChildren(float touchOffsetX, float touchOffsetY)
             moveChildren(0.0f, realOffset);
             break;
         }
-        case Direction::HORIZONTAL: // horizontal
+        case SCROLLVIEW_DIR_HORIZONTAL: // horizontal
         {
             float realOffset = touchOffsetX;
             if (_bounceEnabled)
@@ -956,7 +956,7 @@ bool ScrollView::scrollChildren(float touchOffsetX, float touchOffsetY)
             moveChildren(realOffset, 0.0f);
             break;
         }
-        case Direction::BOTH:
+        case SCROLLVIEW_DIR_BOTH:
         {
             float realOffsetX = touchOffsetX;
             float realOffsetY = touchOffsetY;
@@ -1193,172 +1193,172 @@ bool ScrollView::scrollChildren(float touchOffsetX, float touchOffsetY)
 
 void ScrollView::scrollToBottom(float time, bool attenuated)
 {
-    startAutoScrollChildrenWithDestination(Vec2(_innerContainer->getPosition().x, 0.0f), time, attenuated);
+    startAutoScrollChildrenWithDestination(Point(_innerContainer->getPosition().x, 0.0f), time, attenuated);
 }
 
 void ScrollView::scrollToTop(float time, bool attenuated)
 {
-    startAutoScrollChildrenWithDestination(Vec2(_innerContainer->getPosition().x, _size.height - _innerContainer->getSize().height), time, attenuated);
+    startAutoScrollChildrenWithDestination(Point(_innerContainer->getPosition().x, _size.height - _innerContainer->getSize().height), time, attenuated);
 }
 
 void ScrollView::scrollToLeft(float time, bool attenuated)
 {
-    startAutoScrollChildrenWithDestination(Vec2(0.0f, _innerContainer->getPosition().y), time, attenuated);
+    startAutoScrollChildrenWithDestination(Point(0.0f, _innerContainer->getPosition().y), time, attenuated);
 }
 
 void ScrollView::scrollToRight(float time, bool attenuated)
 {
-    startAutoScrollChildrenWithDestination(Vec2(_size.width - _innerContainer->getSize().width, _innerContainer->getPosition().y), time, attenuated);
+    startAutoScrollChildrenWithDestination(Point(_size.width - _innerContainer->getSize().width, _innerContainer->getPosition().y), time, attenuated);
 }
 
 void ScrollView::scrollToTopLeft(float time, bool attenuated)
 {
-    if (_direction != Direction::BOTH)
+    if (_direction != SCROLLVIEW_DIR_BOTH)
     {
         CCLOG("Scroll diretion is not both!");
         return;
     }
-    startAutoScrollChildrenWithDestination(Vec2(0.0f, _size.height - _innerContainer->getSize().height), time, attenuated);
+    startAutoScrollChildrenWithDestination(Point(0.0f, _size.height - _innerContainer->getSize().height), time, attenuated);
 }
 
 void ScrollView::scrollToTopRight(float time, bool attenuated)
 {
-    if (_direction != Direction::BOTH)
+    if (_direction != SCROLLVIEW_DIR_BOTH)
     {
         CCLOG("Scroll diretion is not both!");
         return;
     }
-    startAutoScrollChildrenWithDestination(Vec2(_size.width - _innerContainer->getSize().width, _size.height - _innerContainer->getSize().height), time, attenuated);
+    startAutoScrollChildrenWithDestination(Point(_size.width - _innerContainer->getSize().width, _size.height - _innerContainer->getSize().height), time, attenuated);
 }
 
 void ScrollView::scrollToBottomLeft(float time, bool attenuated)
 {
-    if (_direction != Direction::BOTH)
+    if (_direction != SCROLLVIEW_DIR_BOTH)
     {
         CCLOG("Scroll diretion is not both!");
         return;
     }
-    startAutoScrollChildrenWithDestination(Vec2::ZERO, time, attenuated);
+    startAutoScrollChildrenWithDestination(Point::ZERO, time, attenuated);
 }
 
 void ScrollView::scrollToBottomRight(float time, bool attenuated)
 {
-    if (_direction != Direction::BOTH)
+    if (_direction != SCROLLVIEW_DIR_BOTH)
     {
         CCLOG("Scroll diretion is not both!");
         return;
     }
-    startAutoScrollChildrenWithDestination(Vec2(_size.width - _innerContainer->getSize().width, 0.0f), time, attenuated);
+    startAutoScrollChildrenWithDestination(Point(_size.width - _innerContainer->getSize().width, 0.0f), time, attenuated);
 }
 
 void ScrollView::scrollToPercentVertical(float percent, float time, bool attenuated)
 {
     float minY = _size.height - _innerContainer->getSize().height;
     float h = - minY;
-    startAutoScrollChildrenWithDestination(Vec2(_innerContainer->getPosition().x, minY + percent * h / 100.0f), time, attenuated);
+    startAutoScrollChildrenWithDestination(Point(_innerContainer->getPosition().x, minY + percent * h / 100.0f), time, attenuated);
 }
 
 void ScrollView::scrollToPercentHorizontal(float percent, float time, bool attenuated)
 {
     float w = _innerContainer->getSize().width - _size.width;
-    startAutoScrollChildrenWithDestination(Vec2(-(percent * w / 100.0f), _innerContainer->getPosition().y), time, attenuated);
+    startAutoScrollChildrenWithDestination(Point(-(percent * w / 100.0f), _innerContainer->getPosition().y), time, attenuated);
 }
 
-void ScrollView::scrollToPercentBothDirection(const Vec2& percent, float time, bool attenuated)
+void ScrollView::scrollToPercentBothDirection(const Point& percent, float time, bool attenuated)
 {
-    if (_direction != Direction::BOTH)
+    if (_direction != SCROLLVIEW_DIR_BOTH)
     {
         return;
     }
     float minY = _size.height - _innerContainer->getSize().height;
     float h = - minY;
     float w = _innerContainer->getSize().width - _size.width;
-    startAutoScrollChildrenWithDestination(Vec2(-(percent.x * w / 100.0f), minY + percent.y * h / 100.0f), time, attenuated);
+    startAutoScrollChildrenWithDestination(Point(-(percent.x * w / 100.0f), minY + percent.y * h / 100.0f), time, attenuated);
 }
 
 void ScrollView::jumpToBottom()
 {
-    jumpToDestination(Vec2(_innerContainer->getPosition().x, 0.0f));
+    jumpToDestination(Point(_innerContainer->getPosition().x, 0.0f));
 }
 
 void ScrollView::jumpToTop()
 {
-    jumpToDestination(Vec2(_innerContainer->getPosition().x, _size.height - _innerContainer->getSize().height));
+    jumpToDestination(Point(_innerContainer->getPosition().x, _size.height - _innerContainer->getSize().height));
 }
 
 void ScrollView::jumpToLeft()
 {
-    jumpToDestination(Vec2(0.0f, _innerContainer->getPosition().y));
+    jumpToDestination(Point(0.0f, _innerContainer->getPosition().y));
 }
 
 void ScrollView::jumpToRight()
 {
-    jumpToDestination(Vec2(_size.width - _innerContainer->getSize().width, _innerContainer->getPosition().y));
+    jumpToDestination(Point(_size.width - _innerContainer->getSize().width, _innerContainer->getPosition().y));
 }
 
 void ScrollView::jumpToTopLeft()
 {
-    if (_direction != Direction::BOTH)
+    if (_direction != SCROLLVIEW_DIR_BOTH)
     {
         CCLOG("Scroll diretion is not both!");
         return;
     }
-    jumpToDestination(Vec2(0.0f, _size.height - _innerContainer->getSize().height));
+    jumpToDestination(Point(0.0f, _size.height - _innerContainer->getSize().height));
 }
 
 void ScrollView::jumpToTopRight()
 {
-    if (_direction != Direction::BOTH)
+    if (_direction != SCROLLVIEW_DIR_BOTH)
     {
         CCLOG("Scroll diretion is not both!");
         return;
     }
-    jumpToDestination(Vec2(_size.width - _innerContainer->getSize().width, _size.height - _innerContainer->getSize().height));
+    jumpToDestination(Point(_size.width - _innerContainer->getSize().width, _size.height - _innerContainer->getSize().height));
 }
 
 void ScrollView::jumpToBottomLeft()
 {
-    if (_direction != Direction::BOTH)
+    if (_direction != SCROLLVIEW_DIR_BOTH)
     {
         CCLOG("Scroll diretion is not both!");
         return;
     }
-    jumpToDestination(Vec2::ZERO);
+    jumpToDestination(Point::ZERO);
 }
 
 void ScrollView::jumpToBottomRight()
 {
-    if (_direction != Direction::BOTH)
+    if (_direction != SCROLLVIEW_DIR_BOTH)
     {
         CCLOG("Scroll diretion is not both!");
         return;
     }
-    jumpToDestination(Vec2(_size.width - _innerContainer->getSize().width, 0.0f));
+    jumpToDestination(Point(_size.width - _innerContainer->getSize().width, 0.0f));
 }
 
 void ScrollView::jumpToPercentVertical(float percent)
 {
     float minY = _size.height - _innerContainer->getSize().height;
     float h = - minY;
-    jumpToDestination(Vec2(_innerContainer->getPosition().x, minY + percent * h / 100.0f));
+    jumpToDestination(Point(_innerContainer->getPosition().x, minY + percent * h / 100.0f));
 }
 
 void ScrollView::jumpToPercentHorizontal(float percent)
 {
     float w = _innerContainer->getSize().width - _size.width;
-    jumpToDestination(Vec2(-(percent * w / 100.0f), _innerContainer->getPosition().y));
+    jumpToDestination(Point(-(percent * w / 100.0f), _innerContainer->getPosition().y));
 }
 
-void ScrollView::jumpToPercentBothDirection(const Vec2& percent)
+void ScrollView::jumpToPercentBothDirection(const Point& percent)
 {
-    if (_direction != Direction::BOTH)
+    if (_direction != SCROLLVIEW_DIR_BOTH)
     {
         return;
     }
     float minY = _size.height - _innerContainer->getSize().height;
     float h = - minY;
     float w = _innerContainer->getSize().width - _size.width;
-    jumpToDestination(Vec2(-(percent.x * w / 100.0f), minY + percent.y * h / 100.0f));
+    jumpToDestination(Point(-(percent.x * w / 100.0f), minY + percent.y * h / 100.0f));
 }
 
 void ScrollView::startRecordSlidAction()
@@ -1383,10 +1383,10 @@ void ScrollView::endRecordSlidAction()
             return;
         }
         float totalDis = 0.0f;
-        Vec2 dir;
+        Point dir;
         switch (_direction)
         {
-            case Direction::VERTICAL:
+            case SCROLLVIEW_DIR_VERTICAL:
                 totalDis = _touchEndedPoint.y - _touchBeganPoint.y;
                 if (totalDis < 0.0f)
                 {
@@ -1397,7 +1397,7 @@ void ScrollView::endRecordSlidAction()
                     dir = SCROLLDIR_UP;
                 }
                 break;
-            case Direction::HORIZONTAL:
+            case SCROLLVIEW_DIR_HORIZONTAL:
                 totalDis = _touchEndedPoint.x - _touchBeganPoint.x;
                 if (totalDis < 0.0f)
                 {
@@ -1408,11 +1408,11 @@ void ScrollView::endRecordSlidAction()
                     dir = SCROLLDIR_RIGHT;
                 }
                 break;
-            case Direction::BOTH:
+            case SCROLLVIEW_DIR_BOTH:
             {
-                Vec2 subVector = _touchEndedPoint - _touchBeganPoint;
+                Point subVector = _touchEndedPoint - _touchBeganPoint;
                 totalDis = subVector.getLength();
-                dir = subVector.getNormalized();
+                dir = subVector.normalize();
                 break;
             }
             default:
@@ -1424,7 +1424,7 @@ void ScrollView::endRecordSlidAction()
     }
 }
 
-void ScrollView::handlePressLogic(const Vec2 &touchPoint)
+void ScrollView::handlePressLogic(const Point &touchPoint)
 {        
     _touchBeganPoint = convertToNodeSpace(touchPoint);
     _touchMovingPoint = _touchBeganPoint;    
@@ -1432,24 +1432,24 @@ void ScrollView::handlePressLogic(const Vec2 &touchPoint)
     _bePressed = true;
 }
 
-void ScrollView::handleMoveLogic(const Vec2 &touchPoint)
+void ScrollView::handleMoveLogic(const Point &touchPoint)
 {
     _touchMovedPoint = convertToNodeSpace(touchPoint);
-    Vec2 delta = _touchMovedPoint - _touchMovingPoint;
+    Point delta = _touchMovedPoint - _touchMovingPoint;
     _touchMovingPoint = _touchMovedPoint;
     switch (_direction)
     {
-        case Direction::VERTICAL: // vertical
+        case SCROLLVIEW_DIR_VERTICAL: // vertical
         {
             scrollChildren(0.0f, delta.y);
             break;
         }
-        case Direction::HORIZONTAL: // horizontal
+        case SCROLLVIEW_DIR_HORIZONTAL: // horizontal
         {
             scrollChildren(delta.x, 0.0f);
             break;
         }
-        case Direction::BOTH: // both
+        case SCROLLVIEW_DIR_BOTH: // both
         {
             scrollChildren(delta.x, delta.y);
             break;
@@ -1459,7 +1459,7 @@ void ScrollView::handleMoveLogic(const Vec2 &touchPoint)
     }
 }
 
-void ScrollView::handleReleaseLogic(const Vec2 &touchPoint)
+void ScrollView::handleReleaseLogic(const Point &touchPoint)
 {
     _touchEndedPoint = convertToNodeSpace(touchPoint);
     endRecordSlidAction();
@@ -1515,7 +1515,7 @@ void ScrollView::recordSlidTime(float dt)
     }
 }
 
-void ScrollView::interceptTouchEvent(int handleState, Widget *sender, const Vec2 &touchPoint)
+void ScrollView::interceptTouchEvent(int handleState, Widget *sender, const Point &touchPoint)
 {
     switch (handleState)
     {
@@ -1528,7 +1528,7 @@ void ScrollView::interceptTouchEvent(int handleState, Widget *sender, const Vec2
             float offset = (sender->getTouchStartPos() - touchPoint).getLength();
             if (offset > _childFocusCancelOffset)
             {
-                sender->setHighlighted(false);
+                sender->setFocused(false);
                 handleMoveLogic(touchPoint);
             }
         }
@@ -1544,7 +1544,7 @@ void ScrollView::interceptTouchEvent(int handleState, Widget *sender, const Vec2
     }
 }
 
-void ScrollView::checkChildInfo(int handleState,Widget* sender,const Vec2 &touchPoint)
+void ScrollView::checkChildInfo(int handleState,Widget* sender,const Point &touchPoint)
 {
     interceptTouchEvent(handleState, sender, touchPoint);
 }
@@ -1555,9 +1555,6 @@ void ScrollView::scrollToTopEvent()
     {
         (_scrollViewEventListener->*_scrollViewEventSelector)(this, SCROLLVIEW_EVENT_SCROLL_TO_TOP);
     }
-    if (_eventCallback) {
-        _eventCallback(this,EventType::SCROLL_TO_TOP);
-    }
 }
 
 void ScrollView::scrollToBottomEvent()
@@ -1565,9 +1562,6 @@ void ScrollView::scrollToBottomEvent()
     if (_scrollViewEventListener && _scrollViewEventSelector)
     {
         (_scrollViewEventListener->*_scrollViewEventSelector)(this, SCROLLVIEW_EVENT_SCROLL_TO_BOTTOM);
-    }
-    if (_eventCallback) {
-        _eventCallback(this,EventType::SCROLL_TO_BOTTOM);
     }
 }
 
@@ -1577,9 +1571,6 @@ void ScrollView::scrollToLeftEvent()
     {
         (_scrollViewEventListener->*_scrollViewEventSelector)(this, SCROLLVIEW_EVENT_SCROLL_TO_LEFT);
     }
-    if (_eventCallback) {
-        _eventCallback(this,EventType::SCROLL_TO_LEFT);
-    }
 }
 
 void ScrollView::scrollToRightEvent()
@@ -1587,9 +1578,6 @@ void ScrollView::scrollToRightEvent()
     if (_scrollViewEventListener && _scrollViewEventSelector)
     {
         (_scrollViewEventListener->*_scrollViewEventSelector)(this, SCROLLVIEW_EVENT_SCROLL_TO_RIGHT);
-    }
-    if (_eventCallback) {
-        _eventCallback(this,EventType::SCROLL_TO_RIGHT);
     }
 }
 
@@ -1599,9 +1587,6 @@ void ScrollView::scrollingEvent()
     {
         (_scrollViewEventListener->*_scrollViewEventSelector)(this, SCROLLVIEW_EVENT_SCROLLING);
     }
-    if (_eventCallback) {
-        _eventCallback(this,EventType::SCROLLING);
-    }
 }
 
 void ScrollView::bounceTopEvent()
@@ -1609,9 +1594,6 @@ void ScrollView::bounceTopEvent()
     if (_scrollViewEventListener && _scrollViewEventSelector)
     {
         (_scrollViewEventListener->*_scrollViewEventSelector)(this, SCROLLVIEW_EVENT_BOUNCE_TOP);
-    }
-    if (_eventCallback) {
-        _eventCallback(this,EventType::BOUNCE_TOP);
     }
 }
 
@@ -1621,9 +1603,6 @@ void ScrollView::bounceBottomEvent()
     {
         (_scrollViewEventListener->*_scrollViewEventSelector)(this, SCROLLVIEW_EVENT_BOUNCE_BOTTOM);
     }
-    if (_eventCallback) {
-        _eventCallback(this,EventType::BOUNCE_BOTTOM);
-    }
 }
 
 void ScrollView::bounceLeftEvent()
@@ -1631,9 +1610,6 @@ void ScrollView::bounceLeftEvent()
     if (_scrollViewEventListener && _scrollViewEventSelector)
     {
         (_scrollViewEventListener->*_scrollViewEventSelector)(this, SCROLLVIEW_EVENT_BOUNCE_LEFT);
-    }
-    if (_eventCallback) {
-        _eventCallback(this,EventType::BOUNCE_LEFT);
     }
 }
 
@@ -1643,9 +1619,6 @@ void ScrollView::bounceRightEvent()
     {
         (_scrollViewEventListener->*_scrollViewEventSelector)(this, SCROLLVIEW_EVENT_BOUNCE_RIGHT);
     }
-    if (_eventCallback) {
-        _eventCallback(this,EventType::BOUNCE_RIGHT);
-    }
 }
 
 void ScrollView::addEventListenerScrollView(Ref *target, SEL_ScrollViewEvent selector)
@@ -1653,18 +1626,13 @@ void ScrollView::addEventListenerScrollView(Ref *target, SEL_ScrollViewEvent sel
     _scrollViewEventListener = target;
     _scrollViewEventSelector = selector;
 }
-    
-void ScrollView::addEventListener(const ccScrollViewCallback& callback)
-{
-    _eventCallback = callback;
-}
 
-void ScrollView::setDirection(Direction dir)
+void ScrollView::setDirection(SCROLLVIEW_DIR dir)
 {
     _direction = dir;
 }
 
-ScrollView::Direction ScrollView::getDirection()
+SCROLLVIEW_DIR ScrollView::getDirection()
 {
     return _direction;
 }
@@ -1694,12 +1662,12 @@ Layout* ScrollView::getInnerContainer()
     return _innerContainer;
 }
 
-void ScrollView::setLayoutType(Type type)
+void ScrollView::setLayoutType(LayoutType type)
 {
     _innerContainer->setLayoutType(type);
 }
 
-Layout::Type ScrollView::getLayoutType() const
+LayoutType ScrollView::getLayoutType() const
 {
     return _innerContainer->getLayoutType();
 }

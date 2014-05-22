@@ -27,8 +27,8 @@ THE SOFTWARE.
 #ifndef __CCNOTIFICATIONCENTER_H__
 #define __CCNOTIFICATIONCENTER_H__
 
-#include "base/CCRef.h"
-#include "base/ccTypes.h"
+#include "CCRef.h"
+#include "ccTypes.h"
 
 NS_CC_BEGIN
 

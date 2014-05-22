@@ -28,24 +28,23 @@
  *
  */
 
-#include "2d/CCParticleBatchNode.h"
-
-#include "renderer/CCTextureAtlas.h"
-#include "2d/CCGrid.h"
-#include "2d/CCParticleSystem.h"
+#include "CCParticleBatchNode.h"
+#include "CCTextureCache.h"
+#include "CCTextureAtlas.h"
+#include "ccConfig.h"
+#include "ccMacros.h"
+#include "CCGrid.h"
+#include "CCParticleSystem.h"
+#include "CCShaderCache.h"
+#include "CCGLProgram.h"
+#include "ccGLStateCache.h"
+#include "base64.h"
+#include "ZipUtils.h"
 #include "platform/CCFileUtils.h"
-#include "base/CCProfiling.h"
-#include "base/ccConfig.h"
-#include "base/ccMacros.h"
-#include "base/base64.h"
-#include "base/ZipUtils.h"
-#include "renderer/CCTextureCache.h"
-#include "renderer/CCGLProgramState.h"
-#include "renderer/CCGLProgram.h"
-#include "renderer/ccGLStateCache.h"
+#include "kazmath/GL/matrix.h"
+#include "CCProfiling.h"
 #include "renderer/CCQuadCommand.h"
 #include "renderer/CCRenderer.h"
-
 
 NS_CC_BEGIN
 
@@ -103,7 +102,7 @@ bool ParticleBatchNode::initWithTexture(Texture2D *tex, int capacity)
     
     _blendFunc = BlendFunc::ALPHA_PREMULTIPLIED;
 
-    setGLProgramState(GLProgramState::getOrCreateWithGLProgramName(GLProgram::SHADER_NAME_POSITION_TEXTURE_COLOR));
+    setShaderProgram(ShaderCache::getInstance()->getProgram(GLProgram::SHADER_NAME_POSITION_TEXTURE_COLOR));
 
     return true;
 }
@@ -121,7 +120,7 @@ bool ParticleBatchNode::initWithFile(const std::string& fileImage, int capacity)
 
 // override visit.
 // Don't call visit on it's children
-void ParticleBatchNode::visit(Renderer *renderer, const Mat4 &parentTransform, bool parentTransformUpdated)
+void ParticleBatchNode::visit(Renderer *renderer, const kmMat4 &parentTransform, bool parentTransformUpdated)
 {
     // CAREFUL:
     // This visit is almost identical to Node#visit
@@ -141,16 +140,14 @@ void ParticleBatchNode::visit(Renderer *renderer, const Mat4 &parentTransform, b
     _transformUpdated = false;
 
     // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
+    // To ease the migration to v3.0, we still support the kmGL stack,
     // but it is deprecated and your code should not rely on it
-    Director* director = Director::getInstance();
-    CCASSERT(nullptr != director, "Director is null when seting matrix stack");
-    director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    kmGLPushMatrix();
+    kmGLLoadMatrix(&_modelViewTransform);
 
     draw(renderer, _modelViewTransform, dirty);
 
-    director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    kmGLPopMatrix();
 }
 
 // override addChild:
@@ -383,7 +380,7 @@ void ParticleBatchNode::removeAllChildrenWithCleanup(bool doCleanup)
     _textureAtlas->removeAllQuads();
 }
 
-void ParticleBatchNode::draw(Renderer *renderer, const Mat4 &transform, bool transformUpdated)
+void ParticleBatchNode::draw(Renderer *renderer, const kmMat4 &transform, bool transformUpdated)
 {
     CC_PROFILER_START("CCParticleBatchNode - draw");
 
@@ -394,7 +391,7 @@ void ParticleBatchNode::draw(Renderer *renderer, const Mat4 &transform, bool tra
 
     _batchCommand.init(
                        _globalZOrder,
-                       getGLProgram(),
+                       _shaderProgram,
                        _blendFunc,
                        _textureAtlas,
                        _modelViewTransform);

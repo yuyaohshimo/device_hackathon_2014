@@ -24,12 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#include "deprecated/CCNotificationCenter.h"
-
-#include <string>
-
-#include "base/CCScriptSupport.h"
+#include "CCNotificationCenter.h"
 #include "deprecated/CCArray.h"
+#include "CCScriptSupport.h"
+#include <string>
 
 using namespace std;
 

@@ -22,7 +22,7 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "base/CCRef.h"
+#include "CCRef.h"
 #include "deprecated/CCBool.h"
 #include "deprecated/CCInteger.h"
 #include "deprecated/CCFloat.h"

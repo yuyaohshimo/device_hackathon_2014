@@ -22,8 +22,8 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "2d/CCNodeGrid.h"
-#include "2d/CCGrid.h"
+#include "CCNodeGrid.h"
+#include "CCGrid.h"
 
 #include "renderer/CCGroupCommand.h"
 #include "renderer/CCRenderer.h"
@@ -82,7 +82,7 @@ void NodeGrid::onGridEndDraw()
     }
 }
 
-void NodeGrid::visit(Renderer *renderer, const Mat4 &parentTransform, bool parentTransformUpdated)
+void NodeGrid::visit(Renderer *renderer, const kmMat4 &parentTransform, bool parentTransformUpdated)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -100,13 +100,10 @@ void NodeGrid::visit(Renderer *renderer, const Mat4 &parentTransform, bool paren
     _transformUpdated = false;
 
     // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
+    // To ease the migration to v3.0, we still support the kmGL stack,
     // but it is deprecated and your code should not rely on it
-    Director* director = Director::getInstance();
-    CCASSERT(nullptr != director, "Director is null when seting matrix stack");
-    
-    director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    kmGLPushMatrix();
+    kmGLLoadMatrix(&_modelViewTransform);
 
     Director::Projection beforeProjectionType = Director::Projection::DEFAULT;
     if(_nodeGrid && _nodeGrid->isActive())
@@ -158,6 +155,7 @@ void NodeGrid::visit(Renderer *renderer, const Mat4 &parentTransform, bool paren
     if(_nodeGrid && _nodeGrid->isActive())
     {
         // restore projection
+        Director *director = Director::getInstance();
         director->setProjection(beforeProjectionType);
     }
 
@@ -167,7 +165,7 @@ void NodeGrid::visit(Renderer *renderer, const Mat4 &parentTransform, bool paren
 
     renderer->popGroup();
  
-    director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    kmGLPopMatrix();
 }
 
 void NodeGrid::setGrid(GridBase *grid)

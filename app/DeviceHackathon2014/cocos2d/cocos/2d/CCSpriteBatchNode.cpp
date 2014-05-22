@@ -26,28 +26,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#include "2d/CCSpriteBatchNode.h"
-
-#include <algorithm>
-
-#include "2d/CCSprite.h"
-#include "2d/CCGrid.h"
-#include "2d/CCDrawingPrimitives.h"
-#include "2d/CCLayer.h"
-#include "2d/CCScene.h"
-#include "base/ccConfig.h"
-#include "base/CCDirector.h"
-#include "base/CCProfiling.h"
-#include "renderer/CCTextureCache.h"
-#include "renderer/CCGLProgramState.h"
-#include "renderer/CCGLProgram.h"
-#include "renderer/ccGLStateCache.h"
+#include "CCSpriteBatchNode.h"
+#include "ccConfig.h"
+#include "CCSprite.h"
+#include "CCGrid.h"
+#include "CCDrawingPrimitives.h"
+#include "CCTextureCache.h"
+#include "CCShaderCache.h"
+#include "CCGLProgram.h"
+#include "ccGLStateCache.h"
+#include "CCDirector.h"
+#include "TransformUtils.h"
+#include "CCProfiling.h"
+#include "CCLayer.h"
+#include "CCScene.h"
 #include "renderer/CCRenderer.h"
 #include "renderer/CCQuadCommand.h"
-#include "math/TransformUtils.h"
+// external
+#include "kazmath/GL/matrix.h"
 
 #include "deprecated/CCString.h" // For StringUtils::format
 
+#include <algorithm>
 
 NS_CC_BEGIN
 
@@ -100,7 +100,7 @@ bool SpriteBatchNode::initWithTexture(Texture2D *tex, ssize_t capacity)
 
     _descendants.reserve(capacity);
     
-    setGLProgramState(GLProgramState::getOrCreateWithGLProgramName(GLProgram::SHADER_NAME_POSITION_TEXTURE_COLOR));
+    setShaderProgram(ShaderCache::getInstance()->getProgram(GLProgram::SHADER_NAME_POSITION_TEXTURE_COLOR));
     return true;
 }
 
@@ -132,7 +132,7 @@ SpriteBatchNode::~SpriteBatchNode()
 
 // override visit
 // don't call visit on it's children
-void SpriteBatchNode::visit(Renderer *renderer, const Mat4 &parentTransform, bool parentTransformUpdated)
+void SpriteBatchNode::visit(Renderer *renderer, const kmMat4 &parentTransform, bool parentTransformUpdated)
 {
     CC_PROFILER_START_CATEGORY(kProfilerCategoryBatchSprite, "CCSpriteBatchNode - visit");
 
@@ -156,16 +156,14 @@ void SpriteBatchNode::visit(Renderer *renderer, const Mat4 &parentTransform, boo
     _transformUpdated = false;
 
     // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
+    // To ease the migration to v3.0, we still support the kmGL stack,
     // but it is deprecated and your code should not rely on it
-    Director* director = Director::getInstance();
-    CCASSERT(nullptr != director, "Director is null when seting matrix stack");
-    director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    kmGLPushMatrix();
+    kmGLLoadMatrix(&_modelViewTransform);
 
     draw(renderer, _modelViewTransform, dirty);
 
-    director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    kmGLPopMatrix();
     setOrderOfArrival(0);
 
     CC_PROFILER_STOP_CATEGORY(kProfilerCategoryBatchSprite, "CCSpriteBatchNode - visit");
@@ -356,7 +354,7 @@ void SpriteBatchNode::reorderBatch(bool reorder)
     _reorderChildDirty=reorder;
 }
 
-void SpriteBatchNode::draw(Renderer *renderer, const Mat4 &transform, bool transformUpdated)
+void SpriteBatchNode::draw(Renderer *renderer, const kmMat4 &transform, bool transformUpdated)
 {
     // Optimization: Fast Dispatch
     if( _textureAtlas->getTotalQuads() == 0 )
@@ -369,7 +367,7 @@ void SpriteBatchNode::draw(Renderer *renderer, const Mat4 &transform, bool trans
 
     _batchCommand.init(
                        _globalZOrder,
-                       getGLProgram(),
+                       _shaderProgram,
                        _blendFunc,
                        _textureAtlas,
                        transform);

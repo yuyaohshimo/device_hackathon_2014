@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#include "2d/CCComponent.h"
-#include "base/CCScriptSupport.h"
+#include "CCComponent.h"
+#include "CCScriptSupport.h"
 
 
 NS_CC_BEGIN

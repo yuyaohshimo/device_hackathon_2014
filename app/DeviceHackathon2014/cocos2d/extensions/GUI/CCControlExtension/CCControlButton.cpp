@@ -27,9 +27,9 @@
 
 #include "CCControlButton.h"
 #include "CCScale9Sprite.h"
-#include "2d/CCLabel.h"
-#include "2d/CCAction.h"
-#include "2d/CCActionInterval.h"
+#include "CCLabel.h"
+#include "CCAction.h"
+#include "CCActionInterval.h"
 
 using namespace std;
 
@@ -89,7 +89,7 @@ bool ControlButton::initWithLabelAndBackgroundSprite(Node* node, Scale9Sprite* b
         
         // Set the default anchor point
         ignoreAnchorPointForPosition(false);
-        setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+        setAnchorPoint(Point::ANCHOR_MIDDLE);
         
         // Set the nodes
         setTitleLabel(node);
@@ -107,7 +107,7 @@ bool ControlButton::initWithLabelAndBackgroundSprite(Node* node, Scale9Sprite* b
         setTitleLabelForState(node, Control::State::NORMAL);
         setBackgroundSpriteForState(backgroundSprite, Control::State::NORMAL);
         
-        setLabelAnchorPoint(Vec2::ANCHOR_MIDDLE);
+        setLabelAnchorPoint(Point::ANCHOR_MIDDLE);
 
         // Layout update
         needsLayout();
@@ -250,12 +250,12 @@ bool ControlButton::doesAdjustBackgroundImage()
     return _doesAdjustBackgroundImage;
 }
 
-const Vec2& ControlButton::getLabelAnchorPoint() const
+const Point& ControlButton::getLabelAnchorPoint() const
 {
     return this->_labelAnchorPoint;
 }
 
-void ControlButton::setLabelAnchorPoint(const Vec2& labelAnchorPoint)
+void ControlButton::setLabelAnchorPoint(const Point& labelAnchorPoint)
 {
     this->_labelAnchorPoint = labelAnchorPoint;
     if (_titleLabel != nullptr)
@@ -348,7 +348,7 @@ void ControlButton::setTitleLabelForState(Node* titleLabel, State state)
 
     _titleLabelDispatchTable.insert((int)state, titleLabel);
     titleLabel->setVisible(false);
-    titleLabel->setAnchorPoint(Vec2(0.5f, 0.5f));
+    titleLabel->setAnchorPoint(Point(0.5f, 0.5f));
     addChild(titleLabel, 1);
 
     // If the current state if equal to the given state we update the layout
@@ -447,7 +447,7 @@ void ControlButton::setBackgroundSpriteForState(Scale9Sprite* sprite, State stat
 
     _backgroundSpriteDispatchTable.insert((int)state, sprite);
     sprite->setVisible(false);
-    sprite->setAnchorPoint(Vec2(0.5f, 0.5f));
+    sprite->setAnchorPoint(Point(0.5f, 0.5f));
     addChild(sprite);
 
     if (this->_preferredSize.width != 0 || this->_preferredSize.height != 0)
@@ -509,14 +509,14 @@ void ControlButton::needsLayout()
     }
     if (_titleLabel != nullptr)
     {
-        _titleLabel->setPosition(Vec2 (getContentSize().width / 2, getContentSize().height / 2));
+        _titleLabel->setPosition(Point (getContentSize().width / 2, getContentSize().height / 2));
     }
     
     // Update the background sprite
     this->setBackgroundSprite(this->getBackgroundSpriteForState(_state));
     if (_backgroundSprite != nullptr)
     {
-        _backgroundSprite->setPosition(Vec2 (getContentSize().width / 2, getContentSize().height / 2));
+        _backgroundSprite->setPosition(Point (getContentSize().width / 2, getContentSize().height / 2));
     }
    
     // Get the title label size
@@ -571,14 +571,14 @@ void ControlButton::needsLayout()
     
     if (_titleLabel != nullptr)
     {
-        _titleLabel->setPosition(Vec2(getContentSize().width/2, getContentSize().height/2));
+        _titleLabel->setPosition(Point(getContentSize().width/2, getContentSize().height/2));
         // Make visible the background and the label
         _titleLabel->setVisible(true);
     }
   
     if (_backgroundSprite != nullptr)
     {
-        _backgroundSprite->setPosition(Vec2(getContentSize().width/2, getContentSize().height/2));
+        _backgroundSprite->setPosition(Point(getContentSize().width/2, getContentSize().height/2));
         _backgroundSprite->setVisible(true);   
     }   
 }
@@ -656,32 +656,30 @@ void ControlButton::onTouchEnded(Touch *pTouch, Event *pEvent)
 
 void ControlButton::setOpacity(GLubyte opacity)
 {
+    // XXX fixed me if not correct
     Control::setOpacity(opacity);
+//    _opacity = opacity;
+//    
+//    Ref* child;
+//    Array* children=getChildren();
+//    CCARRAY_FOREACH(children, child)
+//    {
+//        RGBAProtocol* pNode = dynamic_cast<RGBAProtocol*>(child);        
+//        if (pNode)
+//        {
+//            pNode->setOpacity(opacity);
+//        }
+//    }
     
     for (auto iter = _backgroundSpriteDispatchTable.begin(); iter != _backgroundSpriteDispatchTable.end(); ++iter)
     {
         iter->second->setOpacity(opacity);
     }
-
-    for (auto iter = _titleLabelDispatchTable.begin(); iter != _titleLabelDispatchTable.end(); ++iter)
-    {
-        iter->second->setOpacity(opacity);
-    }
 }
 
-void ControlButton::updateDisplayedOpacity(GLubyte parentOpacity)
+GLubyte ControlButton::getOpacity() const
 {
-    Control::updateDisplayedOpacity(parentOpacity);
-
-    for (auto iter = _backgroundSpriteDispatchTable.begin(); iter != _backgroundSpriteDispatchTable.end(); ++iter)
-    {
-        iter->second->updateDisplayedOpacity(parentOpacity);
-    }
-
-    for (auto iter = _titleLabelDispatchTable.begin(); iter != _titleLabelDispatchTable.end(); ++iter)
-    {
-        iter->second->updateDisplayedOpacity(parentOpacity);
-    }
+    return _realOpacity;
 }
 
 void ControlButton::setColor(const Color3B & color)
@@ -692,26 +690,11 @@ void ControlButton::setColor(const Color3B & color)
     {
         iter->second->setColor(color);
     }
-
-    for (auto iter = _titleLabelDispatchTable.begin(); iter != _titleLabelDispatchTable.end(); ++iter)
-    {
-        iter->second->setColor(color);
-    }
 }
 
-void ControlButton::updateDisplayedColor(const Color3B& parentColor)
+const Color3B& ControlButton::getColor() const
 {
-    Control::updateDisplayedColor(parentColor);
-
-    for (auto iter = _backgroundSpriteDispatchTable.begin(); iter != _backgroundSpriteDispatchTable.end(); ++iter)
-    {
-        iter->second->updateDisplayedColor(parentColor);
-    }
-
-    for (auto iter = _titleLabelDispatchTable.begin(); iter != _titleLabelDispatchTable.end(); ++iter)
-    {
-        iter->second->updateDisplayedColor(parentColor);
-    }
+	return _realColor;
 }
 
 void ControlButton::onTouchCancelled(Touch *pTouch, Event *pEvent)

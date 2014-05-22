@@ -31,14 +31,25 @@ THE SOFTWARE.
 NS_CC_BEGIN
 
 namespace ui{
+
+typedef enum
+{
+    LISTVIEW_GRAVITY_LEFT,
+    LISTVIEW_GRAVITY_RIGHT,
+    LISTVIEW_GRAVITY_CENTER_HORIZONTAL,
     
-CC_DEPRECATED_ATTRIBUTE typedef enum
+    LISTVIEW_GRAVITY_TOP,
+    LISTVIEW_GRAVITY_BOTTOM,
+    LISTVIEW_GRAVITY_CENTER_VERTICAL,
+}ListViewGravity;
+    
+typedef enum
 {
     LISTVIEW_ONSELECTEDITEM_START,
     LISTVIEW_ONSELECTEDITEM_END
 }ListViewEventType;
 
-CC_DEPRECATED_ATTRIBUTE typedef void (Ref::*SEL_ListViewEvent)(Ref*,ListViewEventType);
+typedef void (Ref::*SEL_ListViewEvent)(Ref*,ListViewEventType);
 #define listvieweventselector(_SELECTOR) (SEL_ListViewEvent)(&_SELECTOR)
 
 class ListView : public ScrollView
@@ -47,23 +58,6 @@ class ListView : public ScrollView
     DECLARE_CLASS_GUI_INFO
     
 public:
-    enum class Gravity
-    {
-        LEFT,
-        RIGHT,
-        CENTER_HORIZONTAL,
-        TOP,
-        BOTTOM,
-        CENTER_VERTICAL
-    };
-    
-    enum class EventType
-    {
-        ON_SELECTED_ITEM_START,
-        ON_SELECTED_ITEM_END
-    };
-    
-    typedef std::function<void(Ref*, EventType)> ccListViewCallback;
     
     /**
      * Default constructor
@@ -150,7 +144,7 @@ public:
      * Changes the gravity of listview.
      * @see ListViewGravity
      */
-    void setGravity(Gravity gravity);
+    void setGravity(ListViewGravity gravity);
     
     /**
      * Changes the margin between each item.
@@ -165,8 +159,7 @@ public:
     
     ssize_t getCurSelectedIndex() const;
     
-    CC_DEPRECATED_ATTRIBUTE void addEventListenerListView(Ref* target, SEL_ListViewEvent selector);
-    void addEventListener(const ccListViewCallback& callback);
+    void addEventListenerListView(Ref* target, SEL_ListViewEvent selector);
     
     /**
      * Changes scroll direction of scrollview.
@@ -175,7 +168,7 @@ public:
      *
      * @param SCROLLVIEW_DIR
      */
-    virtual void setDirection(Direction dir) override;
+    virtual void setDirection(SCROLLVIEW_DIR dir) override;
     
     virtual std::string getDescription() const override;
     
@@ -196,8 +189,8 @@ protected:
     virtual Vector<Node*>& getChildren() override{return ScrollView::getChildren();};
     virtual const Vector<Node*>& getChildren() const override{return ScrollView::getChildren();};
     virtual ssize_t getChildrenCount() const override {return ScrollView::getChildrenCount();};
-    virtual Node * getChildByTag(int tag) const override {return ScrollView::getChildByTag(tag);};
-    virtual Widget* getChildByName(const std::string& name) override {return ScrollView::getChildByName(name);};
+    virtual Node * getChildByTag(int tag) override {return ScrollView::getChildByTag(tag);};
+    virtual Widget* getChildByName(const char* name) override {return ScrollView::getChildByName(name);};
     void updateInnerContainerSize();
     void remedyLayoutParameter(Widget* item);
     virtual void onSizeChanged() override;
@@ -205,29 +198,15 @@ protected:
     virtual void copySpecialProperties(Widget* model) override;
     virtual void copyClonedWidgetChildren(Widget* model) override;
     void selectedItemEvent(int state);
-    virtual void interceptTouchEvent(int handleState,Widget* sender,const Vec2 &touchPoint) override;
+    virtual void interceptTouchEvent(int handleState,Widget* sender,const Point &touchPoint) override;
 protected:
     
     Widget* _model;
     Vector<Widget*> _items;
-    Gravity _gravity;
+    ListViewGravity _gravity;
     float _itemsMargin;
-    
     Ref*       _listViewEventListener;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (push)
-#pragma warning (disable: 4996)
-#endif
     SEL_ListViewEvent    _listViewEventSelector;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic warning "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (pop)
-#endif
-    ccListViewCallback _eventCallback;
-    
     ssize_t _curSelectedIndex;
     bool _refreshViewDirty;
 };

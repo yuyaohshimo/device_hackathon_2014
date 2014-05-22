@@ -30,11 +30,11 @@ THE SOFTWARE.
 #include <sstream>
 #include "CCTMXXMLParser.h"
 #include "CCTMXTiledMap.h"
-#include "base/ccMacros.h"
+#include "ccMacros.h"
 #include "platform/CCFileUtils.h"
-#include "base/ZipUtils.h"
-#include "base/base64.h"
-#include "base/CCDirector.h"
+#include "ZipUtils.h"
+#include "base64.h"
+#include "CCDirector.h"
 
 using namespace std;
 
@@ -45,7 +45,7 @@ TMXLayerInfo::TMXLayerInfo()
 : _name("")
 , _tiles(nullptr)
 , _ownTiles(true)
-, _offset(Vec2::ZERO)
+, _offset(Point::ZERO)
 {
 }
 
@@ -340,15 +340,22 @@ void TMXMapInfo::startElement(void *ctx, const char *name, const char **atts)
         s.height = attributeDict["height"].asFloat();
         layer->_layerSize = s;
 
-        Value& visibleValue = attributeDict["visible"];
-        layer->_visible = visibleValue.isNull() ? true : visibleValue.asBool();
+        layer->_visible = attributeDict["visible"].asBool();
 
         Value& opacityValue = attributeDict["opacity"];
-        layer->_opacity = opacityValue.isNull() ? 255 : (unsigned char)(255.0f * opacityValue.asFloat());
+
+        if( !opacityValue.isNull() )
+        {
+            layer->_opacity = (unsigned char)(255.0f * opacityValue.asFloat());
+        }
+        else
+        {
+            layer->_opacity = 255;
+        }
 
         float x = attributeDict["x"].asFloat();
         float y = attributeDict["y"].asFloat();
-        layer->_offset = Vec2(x,y);
+        layer->_offset = Point(x,y);
 
         tmxMapInfo->getLayers().pushBack(layer);
         layer->release();
@@ -361,7 +368,7 @@ void TMXMapInfo::startElement(void *ctx, const char *name, const char **atts)
     {
         TMXObjectGroup *objectGroup = new TMXObjectGroup();
         objectGroup->setGroupName(attributeDict["name"].asString());
-        Vec2 positionOffset;
+        Point positionOffset;
         positionOffset.x = attributeDict["x"].asFloat() * tmxMapInfo->getTileSize().width;
         positionOffset.y = attributeDict["y"].asFloat() * tmxMapInfo->getTileSize().height;
         objectGroup->setPositionOffset(positionOffset);
@@ -452,7 +459,7 @@ void TMXMapInfo::startElement(void *ctx, const char *name, const char **atts)
         // Y
         int y = attributeDict["y"].asInt();
         
-        Vec2 p(x + objectGroup->getPositionOffset().x, _mapSize.height * _tileSize.height - y  - objectGroup->getPositionOffset().x - attributeDict["height"].asInt());
+        Point p(x + objectGroup->getPositionOffset().x, _mapSize.height * _tileSize.height - y  - objectGroup->getPositionOffset().x - attributeDict["height"].asInt());
         p = CC_POINT_PIXELS_TO_POINTS(p);
         dict["x"] = Value(p.x);
         dict["y"] = Value(p.y);

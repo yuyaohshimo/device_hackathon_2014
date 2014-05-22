@@ -43,11 +43,11 @@ namespace cocostudio
             widget->ignoreContentAdaptWithSize(DICTOOL->getBooleanValue_json(options, "ignoreSize"));
         }
         
-        widget->setSizeType((Widget::SizeType)DICTOOL->getIntValue_json(options, "sizeType"));
-        widget->setPositionType((Widget::PositionType)DICTOOL->getIntValue_json(options, "positionType"));
+        widget->setSizeType((SizeType)DICTOOL->getIntValue_json(options, "sizeType"));
+        widget->setPositionType((PositionType)DICTOOL->getIntValue_json(options, "positionType"));
         
-        widget->setSizePercent(Vec2(DICTOOL->getFloatValue_json(options, "sizePercentX"), DICTOOL->getFloatValue_json(options, "sizePercentY")));
-        widget->setPositionPercent(Vec2(DICTOOL->getFloatValue_json(options, "positionPercentX"), DICTOOL->getFloatValue_json(options, "positionPercentY")));
+        widget->setSizePercent(Point(DICTOOL->getFloatValue_json(options, "sizePercentX"), DICTOOL->getFloatValue_json(options, "sizePercentY")));
+        widget->setPositionPercent(Point(DICTOOL->getFloatValue_json(options, "positionPercentX"), DICTOOL->getFloatValue_json(options, "positionPercentY")));
         
         /* adapt screen */
         float w = 0, h = 0;
@@ -80,7 +80,7 @@ namespace cocostudio
         widget->setName(widgetName);
         float x = DICTOOL->getFloatValue_json(options, "x");
         float y = DICTOOL->getFloatValue_json(options, "y");
-        widget->setPosition(Vec2(x,y));
+        widget->setPosition(Point(x,y));
         bool sx = DICTOOL->checkObjectExist_json(options, "scaleX");
         if (sx)
         {
@@ -118,7 +118,7 @@ namespace cocostudio
                 {
                     parameter = LinearLayoutParameter::create();
                     int gravity = DICTOOL->getIntValue_json(layoutParameterDic, "gravity");
-                    ((LinearLayoutParameter*)parameter)->setGravity((cocos2d::ui::LinearLayoutParameter::LinearGravity)gravity);
+                    ((LinearLayoutParameter*)parameter)->setGravity((LinearGravity)gravity);
                     break;
                 }
                 case 2:
@@ -130,7 +130,7 @@ namespace cocostudio
                     const char* relativeToName = DICTOOL->getStringValue_json(layoutParameterDic, "relativeToName");
                     rParameter->setRelativeToWidgetName(relativeToName);
                     int align = DICTOOL->getIntValue_json(layoutParameterDic, "align");
-                    rParameter->setAlign((cocos2d::ui::RelativeLayoutParameter::RelativeAlign)align);
+                    rParameter->setAlign((RelativeAlign)align);
                     break;
                 }
                 default:
@@ -162,9 +162,11 @@ namespace cocostudio
         int colorG = cg ? DICTOOL->getIntValue_json(options, "colorG") : 255;
         int colorB = cb ? DICTOOL->getIntValue_json(options, "colorB") : 255;
         widget->setColor(Color3B(colorR, colorG, colorB));
-        
-        this->setAnchorPointForWidget(widget, options);
-        
+        bool apx = DICTOOL->checkObjectExist_json(options, "anchorPointX");
+        float apxf = apx ? DICTOOL->getFloatValue_json(options, "anchorPointX") : ((widget->getWidgetType() == WidgetTypeWidget) ? 0.5f : 0.0f);
+        bool apy = DICTOOL->checkObjectExist_json(options, "anchorPointY");
+        float apyf = apy ? DICTOOL->getFloatValue_json(options, "anchorPointY") : ((widget->getWidgetType() == WidgetTypeWidget) ? 0.5f : 0.0f);
+        widget->setAnchorPoint(Point(apxf, apyf));
         bool flipX = DICTOOL->getBooleanValue_json(options, "flipX");
         bool flipY = DICTOOL->getBooleanValue_json(options, "flipY");
         widget->setFlippedX(flipX);
@@ -173,17 +175,17 @@ namespace cocostudio
     
     std::string WidgetReader::getResourcePath(const rapidjson::Value &dict,
                                               const std::string &key,
-                                              cocos2d::ui::Widget::TextureResType texType)
+                                              cocos2d::ui::TextureResType texType)
     {
         std::string jsonPath = GUIReader::getInstance()->getFilePath();
         const char* imageFileName = DICTOOL->getStringValue_json(dict, key.c_str());
         std::string imageFileName_tp;
         if (nullptr != imageFileName)
         {
-            if (texType == ui::Widget::TextureResType::LOCAL) {
+            if (texType == UI_TEX_TYPE_LOCAL) {
                 imageFileName_tp = jsonPath + imageFileName;
             }
-            else if(texType == ui::Widget::TextureResType::PLIST){
+            else if(texType == UI_TEX_TYPE_PLIST){
                 imageFileName_tp = imageFileName;
             }
             else{
@@ -192,31 +194,4 @@ namespace cocostudio
         }
         return imageFileName_tp;
     }
-    
-    void WidgetReader::setAnchorPointForWidget(cocos2d::ui::Widget *widget, const rapidjson::Value &options)
-    {
-        bool isAnchorPointXExists = DICTOOL->checkObjectExist_json(options, "anchorPointX");
-        float anchorPointXInFile;
-        if (isAnchorPointXExists) {
-            anchorPointXInFile = DICTOOL->getFloatValue_json(options, "anchorPointX");
-        }else{
-            anchorPointXInFile = widget->getAnchorPoint().x;
-        }
-        
-        bool isAnchorPointYExists = DICTOOL->checkObjectExist_json(options, "anchorPointY");
-        float anchorPointYInFile;
-        if (isAnchorPointYExists) {
-            anchorPointYInFile = DICTOOL->getFloatValue_json(options, "anchorPointY");
-        }
-        else{
-            anchorPointYInFile = widget->getAnchorPoint().y;
-        }
-        
-        if (isAnchorPointXExists || isAnchorPointYExists) {
-            widget->setAnchorPoint(Vec2(anchorPointXInFile, anchorPointYInFile));
-        }
-    }
 }
-
-
-

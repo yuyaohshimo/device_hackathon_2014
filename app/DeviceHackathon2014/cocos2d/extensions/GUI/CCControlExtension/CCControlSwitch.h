@@ -82,7 +82,7 @@ public:
     bool hasMoved() const { return _moved; }
     virtual void setEnabled(bool enabled);
 
-    Vec2 locationFromTouch(Touch* touch);
+    Point locationFromTouch(Touch* touch);
 
     // Overrides
     virtual bool onTouchBegan(Touch *pTouch, Event *pEvent) override;

@@ -24,11 +24,11 @@
  ****************************************************************************/
 
 #include "CCFontCharMap.h"
-#include "2d/CCFontAtlas.h"
+#include "CCFontAtlas.h"
 #include "platform/CCFileUtils.h"
-#include "base/ccUTF8.h"
-#include "base/CCDirector.h"
-#include "renderer/CCTextureCache.h"
+#include "CCDirector.h"
+#include "CCTextureCache.h"
+#include "ccUTF8.h"
 
 NS_CC_BEGIN
 
@@ -99,9 +99,12 @@ FontCharMap::~FontCharMap()
 
 }
 
-int * FontCharMap::getHorizontalKerningForTextUTF16(const std::u16string& text, int &outNumLetters) const
+int * FontCharMap::getHorizontalKerningForTextUTF16(unsigned short *text, int &outNumLetters) const
 {
-    outNumLetters = static_cast<int>(text.length());
+    if (!text)
+        return 0;
+    
+    outNumLetters = cc_wcslen(text);
     
     if (!outNumLetters)
         return 0;

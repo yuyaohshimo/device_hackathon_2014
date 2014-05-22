@@ -25,8 +25,8 @@
 #ifndef __CCINTEGER_H__
 #define __CCINTEGER_H__
 
-#include "base/CCRef.h"
-#include "base/CCDataVisitor.h"
+#include "CCRef.h"
+#include "CCDataVisitor.h"
 #include "platform/CCCommon.h"
 
 NS_CC_BEGIN

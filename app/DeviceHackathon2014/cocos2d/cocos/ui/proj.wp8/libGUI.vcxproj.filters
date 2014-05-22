@@ -21,6 +21,9 @@
     <ClInclude Include="..\..\ui\UILayout.h">
       <Filter>Layouts</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ui\UILayoutDefine.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\ui\UILayoutParameter.h">
       <Filter>Layouts</Filter>
     </ClInclude>
@@ -78,15 +81,12 @@
     <ClInclude Include="..\..\ui\UIVBox.h">
       <Filter>Layouts</Filter>
     </ClInclude>
-    <ClInclude Include="..\UIHBox.h">
-      <Filter>UIWidgets</Filter>
-    </ClInclude>
-    <ClInclude Include="..\UIRelativeBox.h">
-      <Filter>Layouts</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\ui\UILayout.cpp">
+      <Filter>Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ui\UILayoutDefine.cpp">
       <Filter>Layouts</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ui\UILayoutParameter.cpp">
@@ -144,12 +144,6 @@
       <Filter>BaseClasses</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ui\UIVBox.cpp">
-      <Filter>Layouts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\UIHBox.cpp">
-      <Filter>UIWidgets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\UIRelativeBox.cpp">
       <Filter>Layouts</Filter>
     </ClCompile>
   </ItemGroup>

@@ -291,7 +291,6 @@ void FrameData::copy(const BaseData *baseData)
         }
 
         blendFunc = frameData->blendFunc;
-        isTween = frameData->isTween;
     }
 }
 
@@ -390,7 +389,7 @@ bool ContourData::init()
     return true;
 }
 
-void ContourData::addVertex(Vec2 &vertex)
+void ContourData::addVertex(Point &vertex)
 {
     vertexList.push_back(vertex);
 }

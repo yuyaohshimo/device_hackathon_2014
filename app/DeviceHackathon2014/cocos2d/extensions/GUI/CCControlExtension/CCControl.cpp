@@ -28,12 +28,12 @@
  */
 
 #include "CCControl.h"
-#include "base/CCDirector.h"
-#include "2d/CCMenu.h"
-#include "base/CCTouch.h"
+#include "CCDirector.h"
+#include "CCMenu.h"
+#include "CCTouch.h"
 #include "CCInvocation.h"
-#include "base/CCEventDispatcher.h"
-#include "base/CCEventListenerTouch.h"
+#include "CCEventDispatcher.h"
+#include "CCEventListenerTouch.h"
 
 NS_CC_EXT_BEGIN
 
@@ -240,9 +240,9 @@ bool Control::isOpacityModifyRGB() const
 }
 
 
-Vec2 Control::getTouchLocation(Touch* touch)
+Point Control::getTouchLocation(Touch* touch)
 {
-    Vec2 touchLocation = touch->getLocation();            // Get the touch position
+    Point touchLocation = touch->getLocation();            // Get the touch position
     touchLocation = this->convertToNodeSpace(touchLocation);  // Convert to the node space of this class
     
     return touchLocation;
@@ -250,7 +250,7 @@ Vec2 Control::getTouchLocation(Touch* touch)
 
 bool Control::isTouchInside(Touch* touch)
 {
-    Vec2 touchLocation = touch->getLocation(); // Get the touch position
+    Point touchLocation = touch->getLocation(); // Get the touch position
     touchLocation = this->getParent()->convertToNodeSpace(touchLocation);
     Rect bBox = getBoundingBox();
     return bBox.containsPoint(touchLocation);

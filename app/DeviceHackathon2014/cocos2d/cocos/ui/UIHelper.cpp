@@ -55,13 +55,13 @@ Widget* Helper::seekWidgetByTag(Widget* root, int tag)
     return nullptr;
 }
 
-Widget* Helper::seekWidgetByName(Widget* root, const std::string& name)
+Widget* Helper::seekWidgetByName(Widget* root, const char *name)
 {
     if (!root)
     {
         return nullptr;
     }
-    if (root->getName() == name)
+    if (strcmp(root->getName(), name) == 0)
     {
         return root;
     }

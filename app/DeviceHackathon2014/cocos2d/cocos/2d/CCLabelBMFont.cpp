@@ -32,13 +32,13 @@ http://www.angelcode.com/products/bmfont/ (Free, Windows only)
 
 ****************************************************************************/
 #include "CCLabelBMFont.h"
-#include "2d/CCDrawingPrimitives.h"
+#include "CCDrawingPrimitives.h"
 #include "deprecated/CCString.h"
-#include "2d/CCSprite.h"
+#include "CCSprite.h"
 
 #if CC_LABELBMFONT_DEBUG_DRAW
 #include "renderer/CCRenderer.h"
-#include "base/CCDirector.h"
+#include "CCDirector.h"
 #endif
 
 using namespace std;
@@ -65,7 +65,7 @@ LabelBMFont * LabelBMFont::create()
 }
 
 //LabelBMFont - Creation & Init
-LabelBMFont *LabelBMFont::create(const std::string& str, const std::string& fntFile, float width /* = 0 */, TextHAlignment alignment /* = TextHAlignment::LEFT */,const Vec2& imageOffset /* = Vec2::ZERO */)
+LabelBMFont *LabelBMFont::create(const std::string& str, const std::string& fntFile, float width /* = 0 */, TextHAlignment alignment /* = TextHAlignment::LEFT */,const Point& imageOffset /* = Point::ZERO */)
 {
     LabelBMFont *ret = new LabelBMFont();
     if(ret && ret->initWithString(str, fntFile, width, alignment,imageOffset))
@@ -77,7 +77,7 @@ LabelBMFont *LabelBMFont::create(const std::string& str, const std::string& fntF
     return nullptr;
 }
 
-bool LabelBMFont::initWithString(const std::string& str, const std::string& fntFile, float width /* = 0 */, TextHAlignment alignment /* = TextHAlignment::LEFT */,const Vec2& imageOffset /* = Vec2::ZERO */)
+bool LabelBMFont::initWithString(const std::string& str, const std::string& fntFile, float width /* = 0 */, TextHAlignment alignment /* = TextHAlignment::LEFT */,const Point& imageOffset /* = Point::ZERO */)
 {
     if (_label->setBMFontFilePath(fntFile,imageOffset))
     {
@@ -95,9 +95,9 @@ bool LabelBMFont::initWithString(const std::string& str, const std::string& fntF
 LabelBMFont::LabelBMFont()
 {
     _label = Label::create();
-    _label->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
+    _label->setAnchorPoint(Point::ANCHOR_BOTTOM_LEFT);
     this->addChild(_label);
-    this->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    this->setAnchorPoint(Point::ANCHOR_MIDDLE);
     _cascadeOpacityEnabled = true;
 }
 
@@ -152,7 +152,7 @@ void LabelBMFont::setLineBreakWithoutSpace( bool breakWithoutSpace )
 }
 
 // LabelBMFont - FntFile
-void LabelBMFont::setFntFile(const std::string& fntFile, const Vec2& imageOffset /* = Vec2::ZERO */)
+void LabelBMFont::setFntFile(const std::string& fntFile, const Point& imageOffset /* = Point::ZERO */)
 {
     if (_fntFile.compare(fntFile) != 0)
     {
@@ -181,7 +181,7 @@ const BlendFunc &LabelBMFont::getBlendFunc() const
     return _label->getBlendFunc();
 }
 
-Node* LabelBMFont::getChildByTag(int tag) const
+Node* LabelBMFont::getChildByTag(int tag)
 {
     return _label->getLetter(tag);
 }
@@ -207,7 +207,7 @@ Rect LabelBMFont::getBoundingBox() const
     return _label->getBoundingBox();
 }
 #if CC_LABELBMFONT_DEBUG_DRAW
-void LabelBMFont::draw(Renderer *renderer, const Mat4 &transform, bool transformUpdated)
+void LabelBMFont::draw(Renderer *renderer, const kmMat4 &transform, bool transformUpdated)
 {
     Node::draw(renderer, transform, transformUpdated);
 
@@ -216,25 +216,24 @@ void LabelBMFont::draw(Renderer *renderer, const Mat4 &transform, bool transform
     renderer->addCommand(&_customDebugDrawCommand);
 }
 
-void LabelBMFont::drawDebugData(const Mat4& transform, bool transformUpdated)
+void LabelBMFont::drawDebugData(const kmMat4& transform, bool transformUpdated)
 {
-    Director* director = Director::getInstance();
-    director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, transform);
+    kmGLPushMatrix();
+    kmGLLoadMatrix(&transform);
 
     auto size = getContentSize();
 
-    Vec2 vertices[4]=
+    Point vertices[4]=
     {
-        Vec2::ZERO,
-        Vec2(size.width, 0),
-        Vec2(size.width, size.height),
-        Vec2(0, size.height)
+        Point::ZERO,
+        Point(size.width, 0),
+        Point(size.width, size.height),
+        Point(0, size.height)
     };
     
     DrawPrimitives::drawPoly(vertices, 4, true);
 
-    director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    kmGLPopMatrix();
 }
 #endif
 

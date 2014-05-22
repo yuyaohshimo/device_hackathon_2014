@@ -25,12 +25,12 @@
 #ifndef __CCPHYSICS_BODY_INFO_CHIPMUNK_H__
 #define __CCPHYSICS_BODY_INFO_CHIPMUNK_H__
 
-#include "base/ccConfig.h"
+#include "ccConfig.h"
 #if CC_USE_PHYSICS
 
 #include "chipmunk.h"
-#include "base/CCPlatformMacros.h"
-#include "base/CCRef.h"
+#include "CCPlatformMacros.h"
+#include "CCRef.h"
 
 NS_CC_BEGIN
 

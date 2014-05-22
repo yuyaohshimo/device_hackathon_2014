@@ -28,7 +28,7 @@ THE SOFTWARE.
 #ifndef __CCTRANSITIONPROGRESS_H__
 #define __CCTRANSITIONPROGRESS_H__
 
-#include "2d/CCTransition.h"
+#include "CCTransition.h"
 
 NS_CC_BEGIN
 

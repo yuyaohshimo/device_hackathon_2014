@@ -23,17 +23,16 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "2d/CCFontFNT.h"
-#include "base/uthash.h"
-#include "2d/CCFontAtlas.h"
-#include "base/ccUTF8.h"
-#include "platform/CCFileUtils.h"
-#include "base/CCConfiguration.h"
-#include "base/CCDirector.h"
-#include "base/CCMap.h"
-#include "renderer/CCTextureCache.h"
-
+#include "CCFontFNT.h"
+#include "uthash.h"
+#include "CCConfiguration.h"
+#include "CCDirector.h"
+#include "CCFontAtlas.h"
+#include "CCMap.h"
 #include "deprecated/CCString.h"
+#include "CCTextureCache.h"
+#include "ccUTF8.h"
+#include "platform/CCFileUtils.h"
 
 using namespace std;
 NS_CC_BEGIN
@@ -666,7 +665,7 @@ void BMFontConfiguration::parseKerningEntry(std::string line)
     HASH_ADD_INT(_kerningDictionary,key, element);
 }
 
-FontFNT * FontFNT::create(const std::string& fntFilePath, const Vec2& imageOffset /* = Vec2::ZERO */)
+FontFNT * FontFNT::create(const std::string& fntFilePath, const Point& imageOffset /* = Point::ZERO */)
 {
     BMFontConfiguration *newConf = FNTConfigLoadFile(fntFilePath);
     if (!newConf)
@@ -691,16 +690,16 @@ FontFNT * FontFNT::create(const std::string& fntFilePath, const Vec2& imageOffse
     return tempFont;
 }
 
-FontFNT::FontFNT(BMFontConfiguration *theContfig, const Vec2& imageOffset /* = Vec2::ZERO */)
+FontFNT::FontFNT(BMFontConfiguration *theContfig, const Point& imageOffset /* = Point::ZERO */)
 :_configuration(theContfig)
 ,_imageOffset(CC_POINT_PIXELS_TO_POINTS(imageOffset))
 {
-	_configuration->retain();
+
 }
 
 FontFNT::~FontFNT()
 {
-	_configuration->release();
+
 }
 
 void FontFNT::purgeCachedData()
@@ -712,9 +711,12 @@ void FontFNT::purgeCachedData()
     }
 }
 
-int * FontFNT::getHorizontalKerningForTextUTF16(const std::u16string& text, int &outNumLetters) const
+int * FontFNT::getHorizontalKerningForTextUTF16(unsigned short *text, int &outNumLetters) const
 {
-    outNumLetters = static_cast<int>(text.length());
+    if (!text)
+        return 0;
+    
+    outNumLetters = cc_wcslen(text);
     
     if (!outNumLetters)
         return 0;

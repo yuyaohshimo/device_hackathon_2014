@@ -289,20 +289,20 @@ void TableView::_updateContentSize()
 	{
 		if (_direction == Direction::HORIZONTAL)
 		{
-			this->setContentOffset(Vec2(0,0));
+			this->setContentOffset(Point(0,0));
 		}
 		else
 		{
-			this->setContentOffset(Vec2(0,this->minContainerOffset().y));
+			this->setContentOffset(Point(0,this->minContainerOffset().y));
 		}
 		_oldDirection = _direction;
 	}
 
 }
 
-Vec2 TableView::_offsetFromIndex(ssize_t index)
+Point TableView::_offsetFromIndex(ssize_t index)
 {
-    Vec2 offset = this->__offsetFromIndex(index);
+    Point offset = this->__offsetFromIndex(index);
 
     const Size cellSize = _dataSource->tableCellSizeForIndex(this, index);
     if (_vordering == VerticalFillOrder::TOP_DOWN)
@@ -312,25 +312,25 @@ Vec2 TableView::_offsetFromIndex(ssize_t index)
     return offset;
 }
 
-Vec2 TableView::__offsetFromIndex(ssize_t index)
+Point TableView::__offsetFromIndex(ssize_t index)
 {
-    Vec2 offset;
+    Point offset;
     Size  cellSize;
 
     switch (this->getDirection())
     {
         case Direction::HORIZONTAL:
-            offset = Vec2(_vCellsPositions[index], 0.0f);
+            offset = Point(_vCellsPositions[index], 0.0f);
             break;
         default:
-            offset = Vec2(0.0f, _vCellsPositions[index]);
+            offset = Point(0.0f, _vCellsPositions[index]);
             break;
     }
 
     return offset;
 }
 
-long TableView::_indexFromOffset(Vec2 offset)
+long TableView::_indexFromOffset(Point offset)
 {
     long index = 0;
     const long maxIdx = _dataSource->numberOfCellsInTableView(this) - 1;
@@ -352,7 +352,7 @@ long TableView::_indexFromOffset(Vec2 offset)
     return index;
 }
 
-long TableView::__indexFromOffset(Vec2 offset)
+long TableView::__indexFromOffset(Point offset)
 {
     long low = 0;
     long high = _dataSource->numberOfCellsInTableView(this) - 1;
@@ -415,7 +415,7 @@ void TableView::_moveCellOutOfSight(TableViewCell *cell)
 
 void TableView::_setIndexForCell(ssize_t index, TableViewCell *cell)
 {
-    cell->setAnchorPoint(Vec2(0.0f, 0.0f));
+    cell->setAnchorPoint(Point(0.0f, 0.0f));
     cell->setPosition(this->_offsetFromIndex(index));
     cell->setIdx(index);
 }
@@ -469,7 +469,7 @@ void TableView::scrollViewDidScroll(ScrollView* view)
     }
 
     ssize_t startIdx = 0, endIdx = 0, idx = 0, maxIdx = 0;
-    Vec2 offset = this->getContentOffset() * -1;
+    Point offset = this->getContentOffset() * -1;
     maxIdx = MAX(countOfItems-1, 0);
 
     if (_vordering == VerticalFillOrder::TOP_DOWN)
@@ -601,7 +601,7 @@ bool TableView::onTouchBegan(Touch *pTouch, Event *pEvent)
     if(_touches.size() == 1)
     {
         long index;
-        Vec2 point;
+        Point point;
 
         point = this->getContainer()->convertTouchToNodeSpace(pTouch);
 

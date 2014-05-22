@@ -25,64 +25,29 @@
 #ifndef __LAYOUTPARMETER_H__
 #define __LAYOUTPARMETER_H__
 
-#include <string>
-#include "base/CCRef.h"
-
+#include "ui/UILayoutDefine.h"
 
 NS_CC_BEGIN
 
 namespace ui {
 
-/**
- *   @js NA
- *   @lua NA
- */
-class Margin
+typedef enum
 {
-public:
-    float left;
-    float top;
-    float right;
-    float bottom;
-    
-public:
-    Margin();
-    Margin(float l, float t, float r, float b);
-    Margin(const Margin& other);
-    Margin& operator= (const Margin& other);
-    void setMargin(float l, float t, float r, float b);
-    bool equals(const Margin& target) const;
-};
-
-const Margin MarginZero = Margin();
-
+    LAYOUT_PARAMETER_NONE,
+    LAYOUT_PARAMETER_LINEAR,
+    LAYOUT_PARAMETER_RELATIVE
+}LayoutParameterType;
 /**
 *   @js NA
 *   @lua NA
 */
-
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-#ifdef RELATIVE
-#undef RELATIVE
-#endif
-#endif
-
 class LayoutParameter : public Ref
 {
 public:
-    enum class Type
-    {
-        NONE = 0,
-        LINEAR,
-        RELATIVE
-    };
     /**
      * Default constructor
      */
-    LayoutParameter() : _margin(Margin())
-    {
-        _layoutParameterType = Type::NONE;
-    };
+    LayoutParameter() : _margin(Margin()){_layoutParameterType = LAYOUT_PARAMETER_NONE;};
     
     /**
      * Default destructor
@@ -120,17 +85,15 @@ public:
      *
      * @return LayoutParameterType
      */
-    Type getLayoutType() const;
+    LayoutParameterType getLayoutType() const;
     
     LayoutParameter* clone();
     virtual LayoutParameter* createCloneInstance();
     virtual void copyProperties(LayoutParameter* model);
 protected:
     Margin _margin;
-    Type _layoutParameterType;
+    LayoutParameterType _layoutParameterType;
 };
-
-    
 /**
 *   @js NA
 *   @lua NA
@@ -138,24 +101,10 @@ protected:
 class LinearLayoutParameter : public LayoutParameter
 {
 public:
-    enum class LinearGravity
-    {
-        NONE,
-        LEFT,
-        TOP,
-        RIGHT,
-        BOTTOM,
-        CENTER_VERTICAL,
-        CENTER_HORIZONTAL
-    };
     /**
      * Default constructor
      */
-    LinearLayoutParameter()
-    : _linearGravity(LinearGravity::NONE)
-    {
-        _layoutParameterType = Type::LINEAR;
-    };
+    LinearLayoutParameter() : _linearGravity(LINEAR_GRAVITY_NONE){_layoutParameterType = LAYOUT_PARAMETER_LINEAR;};
     
     /**
      * Default destructor
@@ -190,56 +139,18 @@ public:
 protected:
     LinearGravity _linearGravity;
 };
-    
-    
 /**
 *   @js NA
 *   @lua NA
 */
 
-    
 class RelativeLayoutParameter : public LayoutParameter
 {
 public:
-    enum class RelativeAlign
-    {
-        NONE,
-        PARENT_TOP_LEFT,
-        PARENT_TOP_CENTER_HORIZONTAL,
-        PARENT_TOP_RIGHT,
-        PARENT_LEFT_CENTER_VERTICAL,
-        
-        CENTER_IN_PARENT,
-        
-        PARENT_RIGHT_CENTER_VERTICAL,
-        PARENT_LEFT_BOTTOM,
-        PARENT_BOTTOM_CENTER_HORIZONTAL,
-        PARENT_RIGHT_BOTTOM,
-        
-        LOCATION_ABOVE_LEFTALIGN,
-        LOCATION_ABOVE_CENTER,
-        LOCATION_ABOVE_RIGHTALIGN,
-        LOCATION_LEFT_OF_TOPALIGN,
-        LOCATION_LEFT_OF_CENTER,
-        LOCATION_LEFT_OF_BOTTOMALIGN,
-        LOCATION_RIGHT_OF_TOPALIGN,
-        LOCATION_RIGHT_OF_CENTER,
-        LOCATION_RIGHT_OF_BOTTOMALIGN,
-        LOCATION_BELOW_LEFTALIGN,
-        LOCATION_BELOW_CENTER,
-        LOCATION_BELOW_RIGHTALIGN
-    };
     /**
      * Default constructor
      */
-    RelativeLayoutParameter()
-    : _relativeAlign(RelativeAlign::NONE),
-    _relativeWidgetName(""),
-    _relativeLayoutName(""),
-    _put(false)
-    {
-        _layoutParameterType = Type::RELATIVE;
-    };
+    RelativeLayoutParameter() : _relativeAlign(RELATIVE_ALIGN_NONE),_relativeWidgetName(""),_relativeLayoutName(""),_put(false){_layoutParameterType = LAYOUT_PARAMETER_RELATIVE;};
     
     /**
      * Default destructor
@@ -275,28 +186,28 @@ public:
      *
      * @param name
      */
-    void setRelativeToWidgetName(const std::string& name);
+    void setRelativeToWidgetName(const char* name);
     
     /**
      * Gets the key of LayoutParameter. Witch widget named this is relative to.
      *
      * @return name
      */
-    const std::string& getRelativeToWidgetName() const;
+    const char* getRelativeToWidgetName() const;
     
     /**
      * Sets a name in Relative Layout for LayoutParameter.
      *
      * @param name
      */
-    void setRelativeName(const std::string& name);
+    void setRelativeName(const char* name);
     
     /**
      * Gets a name in Relative Layout of LayoutParameter.
      *
      * @return name
      */
-    const std::string& getRelativeName() const;
+    const char* getRelativeName() const;
     
     virtual LayoutParameter* createCloneInstance() override;
     virtual void copyProperties(LayoutParameter* model) override;

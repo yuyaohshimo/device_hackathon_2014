@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <functional>
 
 #include "CCStdC.h"
-#include "2d/CCAction.h"
+#include "CCAction.h"
 
 NS_CC_BEGIN
 
@@ -228,7 +228,7 @@ class CC_DLL Place : public ActionInstant //<NSCopying>
 public:
 
     /** creates a Place action with a position */
-    static Place * create(const Vec2& pos);
+    static Place * create(const Point& pos);
 
     //
     // Overrides
@@ -242,10 +242,10 @@ CC_CONSTRUCTOR_ACCESS:
     virtual ~Place(){}
 
     /** Initializes a Place action with a position */
-    bool initWithPosition(const Vec2& pos);
+    bool initWithPosition(const Point& pos);
 
 protected:
-    Vec2 _position;
+    Point _position;
 
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(Place);

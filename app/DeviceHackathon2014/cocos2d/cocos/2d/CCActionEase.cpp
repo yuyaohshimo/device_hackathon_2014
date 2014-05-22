@@ -31,8 +31,8 @@ THE SOFTWARE.
  * by http://github.com/NikhilK
  */
 
-#include "2d/CCActionEase.h"
-#include "2d/CCTweenFunction.h"
+#include "CCActionEase.h"
+#include "CCTweenFunction.h"
 
 NS_CC_BEGIN
 

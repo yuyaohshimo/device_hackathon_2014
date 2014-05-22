@@ -60,7 +60,7 @@ namespace cocostudio
         }
         
         const char* text = DICTOOL->getStringValue_json(options, "text");
-        labelBMFont->setString(text);
+        labelBMFont->setText(text);
         
         
         WidgetReader::setColorPropsFromJsonDictionary(widget, options);

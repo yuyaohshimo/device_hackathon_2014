@@ -25,11 +25,11 @@
 #ifndef __CCPHYSICS_CONTACT_INFO_CHIPMUNK_H__
 #define __CCPHYSICS_CONTACT_INFO_CHIPMUNK_H__
 
-#include "base/ccConfig.h"
+#include "ccConfig.h"
 #if CC_USE_PHYSICS
 
 #include "chipmunk.h"
-#include "base/CCPlatformMacros.h"
+#include "CCPlatformMacros.h"
 NS_CC_BEGIN
 
 class PhysicsContact;

@@ -34,11 +34,11 @@ static const int BAR_RENDERER_Z = (-1);
 IMPLEMENT_CLASS_GUI_INFO(LoadingBar)
     
 LoadingBar::LoadingBar():
-_direction(Direction::LEFT),
-_percent(100.0),
+_barType(LoadingBarTypeLeft),
+_percent(100),
 _totalLength(0),
 _barRenderer(nullptr),
-_renderBarTexType(TextureResType::LOCAL),
+_renderBarTexType(UI_TEX_TYPE_LOCAL),
 _barRendererTextureSize(Size::ZERO),
 _scale9Enabled(false),
 _prevIgnoreSize(true),
@@ -65,7 +65,7 @@ LoadingBar* LoadingBar::create()
     return nullptr;
 }
     
-LoadingBar* LoadingBar::create(const std::string &textureName, float percentage)
+LoadingBar* LoadingBar::create(const std::string &textureName, int percentage)
 {
     LoadingBar* widget = new LoadingBar;
     if (widget && widget->init()) {
@@ -82,45 +82,42 @@ void LoadingBar::initRenderer()
 {
     _barRenderer = Sprite::create();
     addProtectedChild(_barRenderer, BAR_RENDERER_Z, -1);
-    _barRenderer->setAnchorPoint(Vec2(0.0,0.5));
+    _barRenderer->setAnchorPoint(Point(0.0,0.5));
 }
 
-    
-void LoadingBar::setDirection(cocos2d::ui::LoadingBar::Direction direction)
+void LoadingBar::setDirection(LoadingBarType dir)
 {
-    if (_direction == direction)
+    if (_barType == dir)
     {
         return;
     }
-    _direction = direction;
-    
-    switch (_direction)
+    _barType = dir;
+
+    switch (_barType)
     {
-        case Direction::LEFT:
-            _barRenderer->setAnchorPoint(Vec2(0.0f,0.5f));
-            _barRenderer->setPosition(Vec2(-_totalLength*0.5f,0.0f));
+        case LoadingBarTypeLeft:
+            _barRenderer->setAnchorPoint(Point(0.0f,0.5f));
+            _barRenderer->setPosition(Point(-_totalLength*0.5f,0.0f));
             if (!_scale9Enabled)
             {
                 static_cast<Sprite*>(_barRenderer)->setFlippedX(false);
             }
             break;
-        case Direction::RIGHT:
-            _barRenderer->setAnchorPoint(Vec2(1.0f,0.5f));
-            _barRenderer->setPosition(Vec2(_totalLength*0.5f,0.0f));
+        case LoadingBarTypeRight:
+            _barRenderer->setAnchorPoint(Point(1.0f,0.5f));
+            _barRenderer->setPosition(Point(_totalLength*0.5f,0.0f));
             if (!_scale9Enabled)
             {
                 static_cast<Sprite*>(_barRenderer)->setFlippedX(true);
             }
             break;
     }
-
 }
 
-LoadingBar::Direction LoadingBar::getDirection()const
+int LoadingBar::getDirection()
 {
-    return _direction;
+    return _barType;
 }
-    
 
     void LoadingBar::loadTexture(const std::string& texture,TextureResType texType)
 {
@@ -132,7 +129,7 @@ LoadingBar::Direction LoadingBar::getDirection()const
     _textureFile = texture;
     switch (_renderBarTexType)
     {
-        case TextureResType::LOCAL:
+        case UI_TEX_TYPE_LOCAL:
             if (_scale9Enabled)
             {
                 extension::Scale9Sprite* barRendererScale9 = static_cast<extension::Scale9Sprite*>(_barRenderer);
@@ -144,7 +141,7 @@ LoadingBar::Direction LoadingBar::getDirection()const
                 static_cast<Sprite*>(_barRenderer)->setTexture(texture);
             }
             break;
-        case TextureResType::PLIST:
+        case UI_TEX_TYPE_PLIST:
             if (_scale9Enabled)
             {
                 extension::Scale9Sprite* barRendererScale9 = static_cast<extension::Scale9Sprite*>(_barRenderer);
@@ -162,24 +159,24 @@ LoadingBar::Direction LoadingBar::getDirection()const
     updateRGBAToRenderer(_barRenderer);
     _barRendererTextureSize = _barRenderer->getContentSize();
     
-    switch (_direction)
+    switch (_barType)
     {
-        case Direction::LEFT:
-            _barRenderer->setAnchorPoint(Vec2(0.0f,0.5f));
-            if (!_scale9Enabled)
-            {
-                static_cast<Sprite*>(_barRenderer)->setFlippedX(false);
-            }
-            break;
-        case Direction::RIGHT:
-            _barRenderer->setAnchorPoint(Vec2(1.0f,0.5f));
-            if (!_scale9Enabled)
-            {
-                static_cast<Sprite*>(_barRenderer)->setFlippedX(true);
-            }
-            break;
+    case LoadingBarTypeLeft:
+        _barRenderer->setAnchorPoint(Point(0.0f,0.5f));
+        if (!_scale9Enabled)
+        {
+            static_cast<Sprite*>(_barRenderer)->setFlippedX(false);
+        }
+        break;
+    case LoadingBarTypeRight:
+        _barRenderer->setAnchorPoint(Point(1.0f,0.5f));
+        if (!_scale9Enabled)
+        {
+            static_cast<Sprite*>(_barRenderer)->setFlippedX(true);
+        }
+        break;
     }
-    barRendererScaleChangedWithSize();
+//    barRendererScaleChangedWithSize();
     updateContentSizeWithTextureSize(_barRendererTextureSize);
     _barRendererAdaptDirty = true;
 }
@@ -237,7 +234,7 @@ const Rect& LoadingBar::getCapInsets()
     return _capInsets;
 }
     
-void LoadingBar::setPercent(float percent)
+void LoadingBar::setPercent(int percent)
 {
     if ( percent < 0 || percent > 100)
     {
@@ -263,7 +260,7 @@ void LoadingBar::setPercent(float percent)
     }
 }
 
-float LoadingBar::getPercent() const
+int LoadingBar::getPercent()
 {
     return _percent;
 }
@@ -334,13 +331,13 @@ void LoadingBar::barRendererScaleChangedWithSize()
             _barRenderer->setScaleY(scaleY);
         }
     }
-    switch (_direction)
+    switch (_barType)
     {
-        case Direction::LEFT:
-            _barRenderer->setPosition(Vec2(0.0f, _contentSize.height / 2.0f));
+        case LoadingBarTypeLeft:
+            _barRenderer->setPosition(Point(0.0f, _contentSize.height / 2.0f));
             break;
-        case Direction::RIGHT:
-            _barRenderer->setPosition(Vec2(_totalLength, _contentSize.height / 2.0f));
+        case LoadingBarTypeRight:
+            _barRenderer->setPosition(Point(_totalLength, _contentSize.height / 2.0f));
             break;
         default:
             break;
@@ -388,7 +385,7 @@ void LoadingBar::copySpecialProperties(Widget *widget)
         loadTexture(loadingBar->_textureFile, loadingBar->_renderBarTexType);
         setCapInsets(loadingBar->_capInsets);
         setPercent(loadingBar->_percent);
-        setDirection(loadingBar->_direction);
+        setDirection(loadingBar->_barType);
     }
 }
 

@@ -23,14 +23,13 @@
 #ifndef __PHYSICSNODES_CCPHYSICSSPRITE_H__
 #define __PHYSICSNODES_CCPHYSICSSPRITE_H__
 
-#include "2d/CCSprite.h"
+#include "CCSprite.h"
 #include "extensions/ExtensionMacros.h"
 
 struct cpBody;
 class b2Body;
 
 NS_CC_EXT_BEGIN
-
 /** A Sprite subclass that is bound to a physics body.
  It works with:
  - Chipmunk: Preprocessor macro CC_ENABLE_CHIPMUNK_INTEGRATION should be defined
@@ -106,20 +105,17 @@ public:
     void setPTMRatio(float fPTMRatio);
 
     // overrides
-    virtual const Vec2& getPosition() const override;
+    virtual const Point& getPosition() const override;
     virtual void getPosition(float* x, float* y) const override;
     virtual float getPositionX() const override;
     virtual float getPositionY() const override;
-    virtual void setPosition(const Vec2 &position) override;
+    virtual void setPosition(const Point &position) override;
     virtual float getRotation() const override;
     virtual void setRotation(float fRotation) override;
-    virtual void syncPhysicsTransform() const;
-    virtual const Mat4& getNodeToParentTransform() const override;
-    
-    virtual void draw(Renderer *renderer, const Mat4 &transform, bool transformUpdated) override;
+    virtual const kmMat4& getNodeToParentTransform() const override;
 
 protected:
-    const Vec2& getPosFromPhysics() const;
+    const Point& getPosFromPhysics() const;
 
 protected:
     bool    _ignoreBodyRotation;

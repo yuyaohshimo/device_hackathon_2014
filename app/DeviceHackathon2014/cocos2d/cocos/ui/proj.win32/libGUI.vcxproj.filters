@@ -54,6 +54,9 @@
     <ClInclude Include="..\CocosGUI.h">
       <Filter>System</Filter>
     </ClInclude>
+    <ClInclude Include="..\UILayoutDefine.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
     <ClInclude Include="..\UIWidget.h">
       <Filter>BaseClasses</Filter>
     </ClInclude>
@@ -121,6 +124,9 @@
     </ClCompile>
     <ClCompile Include="..\CocosGUI.cpp">
       <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UILayoutDefine.cpp">
+      <Filter>Layouts</Filter>
     </ClCompile>
     <ClCompile Include="..\UIWidget.cpp">
       <Filter>BaseClasses</Filter>

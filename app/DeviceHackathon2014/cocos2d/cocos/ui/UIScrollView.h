@@ -41,7 +41,15 @@ public:
     virtual const Size& getLayoutSize() override;
 };
 
-CC_DEPRECATED_ATTRIBUTE typedef enum
+enum SCROLLVIEW_DIR
+{
+    SCROLLVIEW_DIR_NONE,
+    SCROLLVIEW_DIR_VERTICAL,
+    SCROLLVIEW_DIR_HORIZONTAL,
+    SCROLLVIEW_DIR_BOTH
+};
+
+typedef enum
 {
     SCROLLVIEW_EVENT_SCROLL_TO_TOP,
     SCROLLVIEW_EVENT_SCROLL_TO_BOTTOM,
@@ -54,7 +62,7 @@ CC_DEPRECATED_ATTRIBUTE typedef enum
     SCROLLVIEW_EVENT_BOUNCE_RIGHT
 }ScrollviewEventType;
 
-CC_DEPRECATED_ATTRIBUTE typedef void (Ref::*SEL_ScrollViewEvent)(Ref*, ScrollviewEventType);
+typedef void (Ref::*SEL_ScrollViewEvent)(Ref*, ScrollviewEventType);
 #define scrollvieweventselector(_SELECTOR) (SEL_ScrollViewEvent)(&_SELECTOR)
 
 
@@ -64,27 +72,6 @@ class ScrollView : public Layout , public UIScrollInterface
     DECLARE_CLASS_GUI_INFO
     
 public:
-    enum class Direction
-    {
-        NONE,
-        VERTICAL,
-        HORIZONTAL,
-        BOTH
-    };
-    
-    enum class EventType
-    {
-        SCROLL_TO_TOP,
-        SCROLL_TO_BOTTOM,
-        SCROLL_TO_LEFT,
-        SCROLL_TO_RIGHT,
-        SCROLLING,
-        BOUNCE_TOP,
-        BOUNCE_BOTTOM,
-        BOUNCE_LEFT,
-        BOUNCE_RIGHT
-    };
-    typedef std::function<void(Ref*, EventType)> ccScrollViewCallback;
     /**
      * Default constructor
      */
@@ -107,7 +94,7 @@ public:
      *
      * @param SCROLLVIEW_DIR
      */
-    virtual void setDirection(Direction dir);
+    virtual void setDirection(SCROLLVIEW_DIR dir);
     
     /**
      * Gets scroll direction of scrollview.
@@ -116,7 +103,7 @@ public:
      *
      * @return SCROLLVIEW_DIR
      */
-    Direction getDirection();
+    SCROLLVIEW_DIR getDirection();
     
     /**
      * Gets inner container of scrollview.
@@ -180,7 +167,7 @@ public:
     /**
      * Scroll inner container to both direction percent position of scrollview.
      */
-    void scrollToPercentBothDirection(const Vec2& percent, float time, bool attenuated);
+    void scrollToPercentBothDirection(const Point& percent, float time, bool attenuated);
     
     /**
      * Move inner container to bottom boundary of scrollview.
@@ -235,7 +222,7 @@ public:
     /**
      * Move inner container to both direction percent position of scrollview.
      */
-    void jumpToPercentBothDirection(const Vec2& percent);
+    void jumpToPercentBothDirection(const Point& percent);
     
     /**
      * Changes inner container size of scrollview.
@@ -258,8 +245,7 @@ public:
     /**
      * Add call back function called scrollview event triggered
      */
-    CC_DEPRECATED_ATTRIBUTE void addEventListenerScrollView(Ref* target, SEL_ScrollViewEvent selector);
-    void addEventListener(const ccScrollViewCallback& callback);
+    void addEventListenerScrollView(Ref* target, SEL_ScrollViewEvent selector);
         
     virtual void addChild(Node * child) override;
     /**
@@ -296,9 +282,9 @@ public:
     
     virtual ssize_t getChildrenCount() const override;
     
-    virtual Node * getChildByTag(int tag) const override;
+    virtual Node * getChildByTag(int tag) override;
     
-    virtual Widget* getChildByName(const std::string& name) override;
+    virtual Widget* getChildByName(const char* name) override;
     
     virtual bool onTouchBegan(Touch *touch, Event *unusedEvent) override;
     virtual void onTouchMoved(Touch *touch, Event *unusedEvent) override;
@@ -322,7 +308,7 @@ public:
      *
      * @param LayoutType
      */
-    virtual void setLayoutType(Type type) override;
+    virtual void setLayoutType(LayoutType type) override;
     
     /**
      * Gets LayoutType.
@@ -331,7 +317,7 @@ public:
      *
      * @return LayoutType
      */
-    virtual Type getLayoutType() const override;
+    virtual LayoutType getLayoutType() const override;
     
     /**
      * Returns the "class name" of widget.
@@ -350,9 +336,9 @@ protected:
     void bounceChildren(float dt);
     void checkBounceBoundary();
     bool checkNeedBounce();
-    void startAutoScrollChildrenWithOriginalSpeed(const Vec2& dir, float v, bool attenuated, float acceleration);
-    void startAutoScrollChildrenWithDestination(const Vec2& des, float time, bool attenuated);
-    void jumpToDestination(const Vec2& des);
+    void startAutoScrollChildrenWithOriginalSpeed(const Point& dir, float v, bool attenuated, float acceleration);
+    void startAutoScrollChildrenWithDestination(const Point& des, float time, bool attenuated);
+    void jumpToDestination(const Point& des);
     void stopAutoScrollChildren();
     void startBounceChildren(float v);
     void stopBounceChildren();
@@ -361,11 +347,11 @@ protected:
     bool bounceScrollChildren(float touchOffsetX, float touchOffsetY);
     void startRecordSlidAction();
     virtual void endRecordSlidAction();
-    virtual void handlePressLogic(const Vec2 &touchPoint) override;
-    virtual void handleMoveLogic(const Vec2 &touchPoint) override;
-    virtual void handleReleaseLogic(const Vec2 &touchPoint) override;
-    virtual void interceptTouchEvent(int handleState,Widget* sender,const Vec2 &touchPoint) override;
-    virtual void checkChildInfo(int handleState,Widget* sender,const Vec2 &touchPoint) override;
+    virtual void handlePressLogic(const Point &touchPoint) override;
+    virtual void handleMoveLogic(const Point &touchPoint) override;
+    virtual void handleReleaseLogic(const Point &touchPoint) override;
+    virtual void interceptTouchEvent(int handleState,Widget* sender,const Point &touchPoint) override;
+    virtual void checkChildInfo(int handleState,Widget* sender,const Point &touchPoint) override;
     void recordSlidTime(float dt);
     void scrollToTopEvent();
     void scrollToBottomEvent();
@@ -385,13 +371,13 @@ protected:
 protected:
     Layout* _innerContainer;
     
-    Direction _direction;
+    SCROLLVIEW_DIR _direction;
 
-    Vec2 _touchBeganPoint;
-    Vec2 _touchMovedPoint;
-    Vec2 _touchEndedPoint;
-    Vec2 _touchMovingPoint;
-    Vec2 _autoScrollDir;
+    Point _touchBeganPoint;
+    Point _touchMovedPoint;
+    Point _touchEndedPoint;
+    Point _touchMovingPoint;
+    Point _autoScrollDir;
     
     float _topBoundary;
     float _bottomBoundary;
@@ -411,11 +397,11 @@ protected:
     float _autoScrollAcceleration;
     bool _isAutoScrollSpeedAttenuated;
     bool _needCheckAutoScrollDestination;
-    Vec2 _autoScrollDestination;
+    Point _autoScrollDestination;
     
     bool _bePressed;
     float _slidTime;
-    Vec2 _moveChildPoint;
+    Point _moveChildPoint;
     float _childFocusCancelOffset;
     
     bool _leftBounceNeeded;
@@ -425,26 +411,14 @@ protected:
     
     bool _bounceEnabled;
     bool _bouncing;
-    Vec2 _bounceDir;
+    Point _bounceDir;
     float _bounceOriginalSpeed;
     bool _inertiaScrollEnabled;
 
 
     
     Ref* _scrollViewEventListener;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (push)
-#pragma warning (disable: 4996)
-#endif
     SEL_ScrollViewEvent _scrollViewEventSelector;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic warning "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (pop)
-#endif
-    ccScrollViewCallback _eventCallback;
 };
 
 }

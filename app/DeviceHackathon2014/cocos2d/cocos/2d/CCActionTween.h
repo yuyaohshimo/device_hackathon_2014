@@ -26,7 +26,7 @@ THE SOFTWARE.
 #ifndef __CCACTIONTWEEN_H__
 #define __CCACTIONTWEEN_H__
 
-#include "2d/CCActionInterval.h"
+#include "CCActionInterval.h"
 
 NS_CC_BEGIN
 

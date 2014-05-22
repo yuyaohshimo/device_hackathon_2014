@@ -44,7 +44,7 @@ public:
     virtual void onEnter() override;
     
     // static
-    static UICCTextField* create(const std::string& placeholder, const std::string& fontName, float fontSize);
+    static UICCTextField* create(const char *placeholder, const char *fontName, float fontSize);
     
     // CCTextFieldDelegate
     virtual bool onTextFieldAttachWithIME(TextFieldTTF *pSender) override;
@@ -65,8 +65,8 @@ public:
     int getCharCount();
     void setPasswordEnabled(bool enable);
     bool isPasswordEnabled();
-    void setPasswordStyleText(const std::string& styleText);
-    void setPasswordText(const std::string& text);
+    void setPasswordStyleText(const char* styleText);
+    void setPasswordText(const char* text);
     void setAttachWithIME(bool attach);
     bool getAttachWithIME();
     void setDetachWithIME(bool detach);
@@ -86,7 +86,7 @@ protected:
     bool _deleteBackward;
 };
 
-CC_DEPRECATED_ATTRIBUTE typedef enum
+typedef enum
 {
     TEXTFIELD_EVENT_ATTACH_WITH_IME,
     TEXTFIELD_EVENT_DETACH_WITH_IME,
@@ -94,7 +94,7 @@ CC_DEPRECATED_ATTRIBUTE typedef enum
     TEXTFIELD_EVENT_DELETE_BACKWARD,
 }TextFiledEventType;
 
-CC_DEPRECATED_ATTRIBUTE typedef void (Ref::*SEL_TextFieldEvent)(Ref*, TextFiledEventType);
+typedef void (Ref::*SEL_TextFieldEvent)(Ref*, TextFiledEventType);
 #define textfieldeventselector(_SELECTOR) (SEL_TextFieldEvent)(&_SELECTOR)
 
 /** class UITextField : public Widget
@@ -107,15 +107,6 @@ class TextField : public Widget
     DECLARE_CLASS_GUI_INFO
     
 public:
-    enum class EventType
-    {
-        ATTACH_WITH_IME,
-        DETACH_WITH_IME,
-        INSERT_TEXT,
-        DELETE_BACKWARD,
-    };
-    typedef std::function<void(Ref*, EventType)> ccTextFieldCallback;
-    
     TextField();
     virtual ~TextField();
     static TextField* create();
@@ -125,7 +116,7 @@ public:
     void setTouchSize(const Size &size);
     Size getTouchSize();
     void setTouchAreaEnabled(bool enable);
-    virtual bool hitTest(const Vec2 &pt);
+    virtual bool hitTest(const Point &pt);
     void setText(const std::string& text);
     void setPlaceHolder(const std::string& value);
     const std::string& getPlaceHolder();
@@ -153,8 +144,7 @@ public:
     void setInsertText(bool insertText);
     bool getDeleteBackward();
     void setDeleteBackward(bool deleteBackward);
-    CC_DEPRECATED_ATTRIBUTE void addEventListenerTextField(Ref* target, SEL_TextFieldEvent selecor);
-    void addEventListener(const ccTextFieldCallback& callback);
+    void addEventListenerTextField(Ref* target, SEL_TextFieldEvent selecor);
     
     /**
      * Returns the "class name" of widget.
@@ -195,19 +185,7 @@ protected:
     bool _useTouchArea;
     
     Ref* _textFieldEventListener;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (push)
-#pragma warning (disable: 4996)
-#endif
     SEL_TextFieldEvent _textFieldEventSelector;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic warning "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (pop)
-#endif
-    ccTextFieldCallback _eventCallback;
     
     std::string _passwordStyleText;
     bool _textFieldRendererAdaptDirty;

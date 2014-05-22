@@ -43,7 +43,7 @@ _prevIgnoreSize(true),
 _capInsets(Rect::ZERO),
 _imageRenderer(nullptr),
 _textureFile(""),
-_imageTexType(TextureResType::LOCAL),
+_imageTexType(UI_TEX_TYPE_LOCAL),
 _imageTextureSize(_size),
 _imageRendererAdaptDirty(true)
 {
@@ -86,7 +86,7 @@ bool ImageView::init()
             ret = false;
             break;
         }
-        _imageTexType = TextureResType::LOCAL;
+        _imageTexType = UI_TEX_TYPE_LOCAL;
     } while (0);
     return ret;
 }
@@ -121,7 +121,7 @@ void ImageView::loadTexture(const std::string& fileName, TextureResType texType)
     _imageTexType = texType;
     switch (_imageTexType)
     {
-        case TextureResType::LOCAL:
+        case UI_TEX_TYPE_LOCAL:
             if (_scale9Enabled)
             {
                 extension::Scale9Sprite* imageRendererScale9 = STATIC_CAST_SCALE9SPRITE;
@@ -134,7 +134,7 @@ void ImageView::loadTexture(const std::string& fileName, TextureResType texType)
                 imageRenderer->setTexture(fileName);
             }
             break;
-        case TextureResType::PLIST:
+        case UI_TEX_TYPE_PLIST:
             if (_scale9Enabled)
             {
                 extension::Scale9Sprite* imageRendererScale9 = STATIC_CAST_SCALE9SPRITE;

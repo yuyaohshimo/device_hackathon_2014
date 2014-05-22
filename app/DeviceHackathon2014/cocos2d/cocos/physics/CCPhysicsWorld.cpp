@@ -22,17 +22,17 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "physics/CCPhysicsWorld.h"
+#include "CCPhysicsWorld.h"
 #if CC_USE_PHYSICS
 
 #include <climits>
 
 #include "chipmunk.h"
 
-#include "physics/CCPhysicsBody.h"
-#include "physics/CCPhysicsShape.h"
+#include "CCPhysicsBody.h"
+#include "CCPhysicsShape.h"
 #include "CCPhysicsContact.h"
-#include "physics/CCPhysicsJoint.h"
+#include "CCPhysicsJoint.h"
 #include "CCPhysicsContact.h"
 
 #include "chipmunk/CCPhysicsWorldInfo_chipmunk.h"
@@ -42,11 +42,11 @@
 #include "chipmunk/CCPhysicsJointInfo_chipmunk.h"
 #include "chipmunk/CCPhysicsHelper_chipmunk.h"
 
-#include "2d/CCDrawNode.h"
-#include "2d/CCScene.h"
-#include "base/CCDirector.h"
-#include "base/CCEventDispatcher.h"
-#include "base/CCEventCustom.h"
+#include "CCDrawNode.h"
+#include "CCScene.h"
+#include "CCDirector.h"
+#include "CCEventDispatcher.h"
+#include "CCEventCustom.h"
 
 #include <algorithm>
 
@@ -66,8 +66,8 @@ namespace
     {
         PhysicsWorld* world;
         PhysicsRayCastCallbackFunc func;
-        Vec2 p1;
-        Vec2 p2;
+        Point p1;
+        Point p2;
         void* data;
     }RayCastCallbackInfo;
     
@@ -153,8 +153,8 @@ void PhysicsWorldCallback::rayCastCallbackFunc(cpShape *shape, cpFloat t, cpVect
         it->second->getShape(),
         info->p1,
         info->p2,
-        Vec2(info->p1.x+(info->p2.x-info->p1.x)*t, info->p1.y+(info->p2.y-info->p1.y)*t),
-        Vec2(n.x, n.y),
+        Point(info->p1.x+(info->p2.x-info->p1.x)*t, info->p1.y+(info->p2.y-info->p1.y)*t),
+        Point(n.x, n.y),
         (float)t,
     };
     
@@ -334,7 +334,7 @@ void PhysicsWorld::collisionSeparateCallback(PhysicsContact& contact)
     _scene->getEventDispatcher()->dispatchEvent(&contact);
 }
 
-void PhysicsWorld::rayCast(PhysicsRayCastCallbackFunc func, const Vec2& point1, const Vec2& point2, void* data)
+void PhysicsWorld::rayCast(PhysicsRayCastCallbackFunc func, const Point& point1, const Point& point2, void* data)
 {
     CCASSERT(func != nullptr, "func shouldn't be nullptr");
     
@@ -371,7 +371,7 @@ void PhysicsWorld::queryRect(PhysicsQueryRectCallbackFunc func, const Rect& rect
     }
 }
 
-void PhysicsWorld::queryPoint(PhysicsQueryPointCallbackFunc func, const Vec2& point, void* data)
+void PhysicsWorld::queryPoint(PhysicsQueryPointCallbackFunc func, const Point& point, void* data)
 {
     CCASSERT(func != nullptr, "func shouldn't be nullptr");
     
@@ -390,7 +390,7 @@ void PhysicsWorld::queryPoint(PhysicsQueryPointCallbackFunc func, const Vec2& po
     }
 }
 
-Vector<PhysicsShape*> PhysicsWorld::getShapes(const Vec2& point) const
+Vector<PhysicsShape*> PhysicsWorld::getShapes(const Point& point) const
 {
     Vector<PhysicsShape*> arr;
     cpSpaceNearestPointQuery(this->_info->getSpace(),
@@ -404,7 +404,7 @@ Vector<PhysicsShape*> PhysicsWorld::getShapes(const Vec2& point) const
     return arr;
 }
 
-PhysicsShape* PhysicsWorld::getShape(const Vec2& point) const
+PhysicsShape* PhysicsWorld::getShape(const Point& point) const
 {
     cpShape* shape = cpSpaceNearestPointQueryNearest(this->_info->getSpace(),
                                     PhysicsHelper::point2cpv(point),
@@ -526,20 +526,18 @@ void PhysicsWorld::updateBodies()
         return;
     }
     
-    // issue #4944, contact callback will be invoked when add/remove body, _delayAddBodies maybe changed, so we need make a copy.
-    auto addCopy = _delayAddBodies;
-    _delayAddBodies.clear();
-    for (auto& body : addCopy)
+    for (auto& body : _delayAddBodies)
     {
         doAddBody(body);
     }
     
-    auto removeCopy = _delayRemoveBodies;
-    _delayRemoveBodies.clear();
-    for (auto& body : removeCopy)
+    for (auto& body : _delayRemoveBodies)
     {
         doRemoveBody(body);
     }
+    
+    _delayAddBodies.clear();
+    _delayRemoveBodies.clear();
 }
 
 void PhysicsWorld::removeBody(int tag)
@@ -670,16 +668,12 @@ void PhysicsWorld::updateJoints()
         return;
     }
     
-    auto addCopy = _delayAddJoints;
-    _delayAddJoints.clear();
-    for (auto joint : addCopy)
+    for (auto joint : _delayAddJoints)
     {
         doAddJoint(joint);
     }
     
-    auto removeCopy = _delayRemoveJoints;
-    _delayRemoveJoints.clear();
-    for (auto joint : removeCopy)
+    for (auto joint : _delayRemoveJoints)
     {
         doRemoveJoint(joint);
         
@@ -688,6 +682,9 @@ void PhysicsWorld::updateJoints()
             delete joint;
         }
     }
+    
+    _delayAddJoints.clear();
+    _delayRemoveJoints.clear();
 }
 
 void PhysicsWorld::removeShape(PhysicsShape* shape)
@@ -870,7 +867,8 @@ void PhysicsWorld::setGravity(const Vect& gravity)
             // reset gravity for body
             if (!body->isGravityEnabled())
             {
-                body->applyForce((_gravity - gravity) * body->getMass());
+                body->applyForce(_gravity * body->getMass());
+                body->applyForce(- gravity * body->getMass());
             }
         }
     }
@@ -881,7 +879,7 @@ void PhysicsWorld::setGravity(const Vect& gravity)
 
 void PhysicsWorld::update(float delta)
 {
-    while (_delayDirty)
+    if (_delayDirty)
     {
         // the updateJoints must run before the updateBodies.
         updateJoints();
@@ -908,7 +906,7 @@ void PhysicsWorld::update(float delta)
 }
 
 PhysicsWorld::PhysicsWorld()
-: _gravity(Vec2(0.0f, -98.0f))
+: _gravity(Point(0.0f, -98.0f))
 , _speed(1.0f)
 , _updateRate(1)
 , _updateRateCount(0)
@@ -968,16 +966,16 @@ void PhysicsDebugDraw::drawShape(PhysicsShape& shape)
             case CP_CIRCLE_SHAPE:
             {
                 float radius = PhysicsHelper::cpfloat2float(cpCircleShapeGetRadius(subShape));
-                Vec2 centre = PhysicsHelper::cpv2point(cpBodyGetPos(cpShapeGetBody(subShape)))
+                Point centre = PhysicsHelper::cpv2point(cpBodyGetPos(cpShapeGetBody(subShape)))
                 + PhysicsHelper::cpv2point(cpCircleShapeGetOffset(subShape));
                 
                 static const int CIRCLE_SEG_NUM = 12;
-                Vec2 seg[CIRCLE_SEG_NUM] = {};
+                Point seg[CIRCLE_SEG_NUM] = {};
                 
                 for (int i = 0; i < CIRCLE_SEG_NUM; ++i)
                 {
                     float angle = (float)i * M_PI / (float)CIRCLE_SEG_NUM * 2.0f;
-                    Vec2 d(radius * cosf(angle), radius * sinf(angle));
+                    Point d(radius * cosf(angle), radius * sinf(angle));
                     seg[i] = centre + d;
                 }
                 _drawNode->drawPolygon(seg, CIRCLE_SEG_NUM, fillColor, 1, outlineColor);
@@ -995,7 +993,7 @@ void PhysicsDebugDraw::drawShape(PhysicsShape& shape)
             {
                 cpPolyShape* poly = (cpPolyShape*)subShape;
                 int num = poly->numVerts;
-                Vec2* seg = new Vec2[num];
+                Point* seg = new Point[num];
                 
                 PhysicsHelper::cpvs2points(poly->tVerts, seg, num);
                 

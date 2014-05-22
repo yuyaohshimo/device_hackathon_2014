@@ -32,21 +32,15 @@ NS_CC_BEGIN
 namespace ui {
 
 /**
- *  For creating a system font or a TTF font Text
- *@js 
- *@lua NA
- */
+*   @js NA
+*   @lua NA
+*/
 class Text : public Widget
 {
     
     DECLARE_CLASS_GUI_INFO
     
 public:
-    enum class Type
-    {
-        SYSTEM,
-        TTF
-    };
     /**
      * Default constructor
      */
@@ -64,9 +58,6 @@ public:
     
     /**
      *  create a Text object with textContent, fontName and fontSize
-     *  the fontName could be a system font name or a TTF file path.
-     *  Usage:  Text *text = Text::create("Hello", "Arial", 20);  //create a system font UIText
-     *          Text *text = Text::create("Hello", "xxx\xxx.ttf", 20); //create a TTF font UIText
      */
     static Text* create(const std::string& textContent,
                         const std::string& fontName,
@@ -77,30 +68,26 @@ public:
      *
      * @param text  string value.
      */
-    CC_DEPRECATED_ATTRIBUTE void setText(const std::string& text){this->setString(text);}
-    void setString(const std::string& text);
+    void setText(const std::string& text);
 
     /**
      * Gets the string value of label.
      *
-     * @return string value.
+     * @return text  string value.
      */
-    CC_DEPRECATED_ATTRIBUTE const std::string& getStringValue(){ return this->getString();}
-    const std::string& getString()const;
+    const std::string& getStringValue();
 
     /**
-     * Gets the string length of the label.
-     * Note: This length will be larger than the raw string length,
-     * if you want to get the raw string length, you should call this->getString().size() instead
+     * Gets the string length of label.
      *
      * @return  string length.
      */
-    ssize_t getStringLength()const;
+    ssize_t getStringLength();
 
     /**
      * Sets the font size of label.
      *
-     * @param size font size.
+     * @param  font size.
      */
     void setFontSize(int size);
 
@@ -108,23 +95,17 @@ public:
 
     /**
      * Sets the font name of label.
-     *  If you are trying to use a system font, you could just pass a font name
-     * If you are trying to use a TTF, you should pass a file path to the TTF file
-     * Usage:  Text *text = Text::create("Hello", "Arial", 20);  //create a system font UIText
-     *         text->setFontName("Marfelt");  // it will change the font  to  system font no matter the previous font type is TTF or system font
-     *         text->setFontName("xxxx/xxx.ttf"); //it will change the font  to TTF font no matter the previous font type is TTF or system font
-     * @param name font name.
+     *
+     * @param  font name.
      */
     void setFontName(const std::string& name);
 
     const std::string& getFontName();
-    
-    Type getType() const;
 
     /**
      * Sets the touch scale enabled of label.
      *
-     * @param enabled touch scale enabled of label.
+     * @param  touch scale enabled of label.
      */
     void setTouchScaleChangeEnabled(bool enabled);
 
@@ -188,7 +169,6 @@ protected:
     float _onSelectedScaleOffset;
     Label* _labelRenderer;
     bool _labelRendererAdaptDirty;
-    Type _type;
 };
 
 }

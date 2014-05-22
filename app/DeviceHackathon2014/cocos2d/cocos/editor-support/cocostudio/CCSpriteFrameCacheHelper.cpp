@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 #include "cocostudio/CCSpriteFrameCacheHelper.h"
 
-#include "2d/CCSpriteFrameCache.h"
+#include "CCSpriteFrameCache.h"
 
 using namespace cocos2d;
 

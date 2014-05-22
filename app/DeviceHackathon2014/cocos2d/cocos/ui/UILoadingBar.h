@@ -31,6 +31,11 @@ NS_CC_BEGIN
 
 namespace ui {
 
+typedef enum
+{
+    LoadingBarTypeLeft,
+    LoadingBarTypeRight
+}LoadingBarType;
 /**
 *   @js NA
 *   @lua NA
@@ -41,11 +46,6 @@ class LoadingBar : public Widget
     DECLARE_CLASS_GUI_INFO
     
 public:
-    enum class Direction
-    {
-        LEFT,
-        RIGHT
-    };
     /**
      * Default constructor
      */
@@ -64,25 +64,25 @@ public:
     /**
      * create a LoadingBar with a texture and a percentage
      **/
-    static LoadingBar* create(const std::string& textureName, float percentage = 0);
+    static LoadingBar* create(const std::string& textureName, int percentage = 0);
     
     /**
      * Changes the progress direction of loadingbar.
      *
-     * @see Direction  LEFT means progress left to right, RIGHT otherwise.
+     * @see LoadingBarType  LoadingBarTypeLeft means progress left to right, LoadingBarTypeRight otherwise.
      *
-     * @param Direction
+     * @param LoadingBarType
      */
-    void setDirection(Direction direction);
+    void setDirection(LoadingBarType dir);
     
     /**
      * Gets the progress direction of loadingbar.
      *
-     * @see Direction  LEFT means progress left to right, RIGHT otherwise.
+     * @see LoadingBarType  LoadingBarTypeLeft means progress left to right, LoadingBarTypeRight otherwise.
      *
-     * @return Direction
+     * @param LoadingBarType
      */
-    Direction getDirection()const;
+    int getDirection();
     
     /**
      * Load texture for loadingbar.
@@ -91,21 +91,21 @@ public:
      *
      * @param texType    @see UI_TEX_TYPE_LOCAL
      */
-    void loadTexture(const std::string& texture,TextureResType texType = TextureResType::LOCAL);
+    void loadTexture(const std::string& texture,TextureResType texType = UI_TEX_TYPE_LOCAL);
     
     /**
      * Changes the progress direction of loadingbar.
      *
      * @param percent    percent value from 1 to 100.
      */
-    void setPercent(float percent);
+    void setPercent(int percent);
     
     /**
      * Gets the progress direction of loadingbar.
      *
      * @return percent    percent value from 1 to 100.
      */
-    float getPercent() const;
+    int getPercent();
     
     /**
      * Sets if loadingbar is using scale9 renderer.
@@ -150,8 +150,8 @@ protected:
     virtual void copySpecialProperties(Widget* model) override;
     virtual void adaptRenderers() override;
 protected:
-    Direction _direction;
-    float _percent;
+    LoadingBarType _barType;
+    int _percent;
     float _totalLength;
     Node* _barRenderer;
     TextureResType _renderBarTexType;

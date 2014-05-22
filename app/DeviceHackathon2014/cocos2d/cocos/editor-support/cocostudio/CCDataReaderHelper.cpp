@@ -23,8 +23,8 @@ THE SOFTWARE.
 ****************************************************************************/
 
 #include "platform/CCFileUtils.h"
-#include "base/CCDirector.h"
-#include "base/CCScheduler.h"
+#include "CCDirector.h"
+#include "CCScheduler.h"
 
 #include "tinyxml2.h"
 
@@ -1166,7 +1166,7 @@ ContourData *DataReaderHelper::decodeContour(tinyxml2::XMLElement *contourXML, D
 
     while (vertexDataXML)
     {
-        Vec2 vertex;
+        Point vertex;
 
         vertexDataXML->QueryFloatAttribute(A_X, &vertex.x);
         vertexDataXML->QueryFloatAttribute(A_Y, &vertex.y);
@@ -1631,7 +1631,7 @@ ContourData *DataReaderHelper::decodeContour(const rapidjson::Value& json)
     {
         const rapidjson::Value &dic = DICTOOL->getSubDictionary_json(json, VERTEX_POINT, i);
 
-        Vec2 vertex;
+        Point vertex;
 
         vertex.x = DICTOOL->getFloatValue_json(dic, A_X);
         vertex.y = DICTOOL->getFloatValue_json(dic, A_Y);

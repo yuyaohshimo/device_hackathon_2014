@@ -25,11 +25,10 @@
 #ifndef _CCFontAtlas_h_
 #define _CCFontAtlas_h_
 
-#include "base/CCPlatformMacros.h"
-#include "base/CCRef.h"
-#include "CCStdC.h"
-#include <string>
 #include <unordered_map>
+#include "CCPlatformMacros.h"
+#include "CCRef.h"
+#include "CCStdC.h"
 
 NS_CC_BEGIN
 
@@ -72,9 +71,9 @@ public:
     virtual ~FontAtlas();
     
     void addLetterDefinition(const FontLetterDefinition &letterDefinition);
-    bool getLetterDefinitionForChar(char16_t letteCharUTF16, FontLetterDefinition &outDefinition);
+    bool getLetterDefinitionForChar(unsigned short  letteCharUTF16, FontLetterDefinition &outDefinition);
     
-    bool prepareLetterDefinitions(const std::u16string& utf16String);
+    bool prepareLetterDefinitions(unsigned short  *utf16String);
 
     inline const std::unordered_map<ssize_t, Texture2D*>& getTextures() const{ return _atlasTextures;}
     void  addTexture(Texture2D *texture, int slot);

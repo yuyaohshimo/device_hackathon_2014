@@ -32,13 +32,18 @@ NS_CC_BEGIN
 
 namespace ui {
 
-CC_DEPRECATED_ATTRIBUTE typedef enum
+typedef enum
 {
     PAGEVIEW_EVENT_TURNING,
 }PageViewEventType;
 
-CC_DEPRECATED_ATTRIBUTE typedef void (Ref::*SEL_PageViewEvent)(Ref*, PageViewEventType);
+typedef void (Ref::*SEL_PageViewEvent)(Ref*, PageViewEventType);
 #define pagevieweventselector(_SELECTOR)(SEL_PageViewEvent)(&_SELECTOR)
+
+typedef enum {
+    PAGEVIEW_TOUCHLEFT,
+    PAGEVIEW_TOUCHRIGHT
+}PVTouchDir;
 
 class PageView : public Layout , public UIScrollInterface
 {
@@ -46,18 +51,6 @@ class PageView : public Layout , public UIScrollInterface
     DECLARE_CLASS_GUI_INFO
     
 public:
-    enum class EventType
-    {
-        TURNING
-    };
-    
-    enum class TouchDirection
-    {
-        LEFT,
-        RIGHT
-    };
-    
-    typedef std::function<void(Ref*,EventType)> ccPageViewCallback;
     /**
      * Default constructor
      */
@@ -133,8 +126,8 @@ public:
     Layout* getPage(ssize_t index);
     
     // event
-    CC_DEPRECATED_ATTRIBUTE void addEventListenerPageView(Ref *target, SEL_PageViewEvent selector);
-    void addEventListener(const ccPageViewCallback& callback);
+    void addEventListenerPageView(Ref *target, SEL_PageViewEvent selector);
+
     
 
     
@@ -152,7 +145,7 @@ public:
      *
      * @param LayoutType
      */
-    virtual void setLayoutType(Type type) override{};
+    virtual void setLayoutType(LayoutType type) override{};
     
     /**
      * Gets LayoutType.
@@ -161,7 +154,7 @@ public:
      *
      * @return LayoutType
      */
-    virtual Type getLayoutType() const override{return Type::ABSOLUTE;};
+    virtual LayoutType getLayoutType() const override{return LAYOUT_ABSOLUTE;};
     
     /**
      * Returns the "class name" of widget.
@@ -183,17 +176,16 @@ protected:
     virtual Vector<Node*>& getChildren() override{return Widget::getChildren();};
     virtual const Vector<Node*>& getChildren() const override{return Widget::getChildren();};
     virtual ssize_t getChildrenCount() const override {return Widget::getChildrenCount();};
-    virtual Node * getChildByTag(int tag) const override {return Widget::getChildByTag(tag);};
-virtual Widget* getChildByName(const std::string& name) override {return Widget::getChildByName(name);};
-
+    virtual Node * getChildByTag(int tag) override {return Widget::getChildByTag(tag);};
+    virtual Widget* getChildByName(const char* name) override {return Widget::getChildByName(name);};
     Layout* createPage();
     float getPositionXByIndex(ssize_t idx);
     void updateBoundaryPages();
-    virtual void handlePressLogic(const Vec2 &touchPoint) override;
-    virtual void handleMoveLogic(const Vec2 &touchPoint) override;
-    virtual void handleReleaseLogic(const Vec2 &touchPoint) override;
-    virtual void interceptTouchEvent(int handleState, Widget* sender, const Vec2 &touchPoint) override;
-    virtual void checkChildInfo(int handleState, Widget* sender, const Vec2 &touchPoint) override;
+    virtual void handlePressLogic(const Point &touchPoint) override;
+    virtual void handleMoveLogic(const Point &touchPoint) override;
+    virtual void handleReleaseLogic(const Point &touchPoint) override;
+    virtual void interceptTouchEvent(int handleState, Widget* sender, const Point &touchPoint) override;
+    virtual void checkChildInfo(int handleState, Widget* sender, const Point &touchPoint) override;
     virtual bool scrollPages(float touchOffset);
     void movePages(float offset);
     void pageTurningEvent();
@@ -208,10 +200,10 @@ virtual Widget* getChildByName(const std::string& name) override {return Widget:
 protected:
     ssize_t _curPageIdx;
     Vector<Layout*> _pages;
-    TouchDirection _touchMoveDir;
+    PVTouchDir _touchMoveDir;
     float _touchStartLocation;
     float _touchMoveStartLocation;
-    Vec2 _movePagePoint;
+    Point _movePagePoint;
     Widget* _leftChild;
     Widget* _rightChild;
     float _leftBoundary;
@@ -221,22 +213,9 @@ protected:
     float _autoScrollSpeed;
     int _autoScrollDir;
     float _childFocusCancelOffset;
-
-
     Ref* _pageViewEventListener;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (push)
-#pragma warning (disable: 4996)
-#endif
     SEL_PageViewEvent _pageViewEventSelector;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic warning "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (pop)
-#endif
-    ccPageViewCallback _eventCallback;
+
 };
 
 }

@@ -38,6 +38,9 @@ option(USE_CHIPMUNK "Use chipmunk for physics library" ON)
 option(USE_BOX2D "Use box2d for physics library" OFF)
 option(DEBUG_MODE "Debug or release?" ON)
 option(BUILD_LIBS_LUA "Build lua libraries" OFF)
+option(BUILD_GUI "Build GUI library" ON)
+option(BUILD_NETWORK "Build network library" ON)
+option(BUILD_STORAGE "Build storage library" ON)
 option(BUILD_EXTENSIONS "Build extension library" ON)
 option(BUILD_EDITOR_SPINE "Build editor support for spine" ON)
 option(BUILD_EDITOR_COCOSTUDIO "Build editor support for cocostudio" ON)
@@ -51,6 +54,9 @@ option(USE_CHIPMUNK "Use chipmunk for physics library" ON)
 option(USE_BOX2D "Use box2d for physics library" OFF)
 option(DEBUG_MODE "Debug or release?" ON)
 option(BUILD_LIBS_LUA "Build lua libraries" ON)
+option(BUILD_GUI "Build GUI library" ON)
+option(BUILD_NETWORK "Build network library" ON)
+option(BUILD_STORAGE "Build storage library" ON)
 option(BUILD_EXTENSIONS "Build extension library" ON)
 option(BUILD_EDITOR_SPINE "Build editor support for spine" ON)
 option(BUILD_EDITOR_COCOSTUDIO "Build editor support for cocostudio" ON)
@@ -130,10 +136,15 @@ endif()
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/cocos
-  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/platform/desktop
-  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/platform/${PLATFORM_FOLDER}
   ${CMAKE_CURRENT_SOURCE_DIR}/cocos/audio/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/2d
+  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/2d/renderer
+  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/2d/platform
+  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/base
+  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/deprecated
+  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/physics
   ${CMAKE_CURRENT_SOURCE_DIR}/cocos/editor-support
+  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/math/kazmath
   ${CMAKE_CURRENT_SOURCE_DIR}/cocos/scripting/lua-bindings/auto
   ${CMAKE_CURRENT_SOURCE_DIR}/cocos/scripting/lua-bindings/manual
   ${CMAKE_CURRENT_SOURCE_DIR}/extensions
@@ -142,6 +153,8 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/external/unzip
   ${CMAKE_CURRENT_SOURCE_DIR}/external/edtaa3func
   ${CMAKE_CURRENT_SOURCE_DIR}/external/chipmunk/include/chipmunk
+  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/2d/platform/desktop
+  ${CMAKE_CURRENT_SOURCE_DIR}/cocos/2d/platform/${PLATFORM_FOLDER}
   ${CMAKE_CURRENT_SOURCE_DIR}/external/jpeg/include/${PLATFORM_FOLDER}
   ${CMAKE_CURRENT_SOURCE_DIR}/external/png/include/${PLATFORM_FOLDER}
   ${CMAKE_CURRENT_SOURCE_DIR}/external/tiff/include/${PLATFORM_FOLDER}
@@ -204,6 +217,10 @@ else()
 
 endif()
 
+
+# kazmath
+add_subdirectory(cocos/math/kazmath)
+
 # chipmunk library
 add_subdirectory(external/chipmunk/src)
 
@@ -222,8 +239,26 @@ add_subdirectory(external/xxhash)
 # audio
 add_subdirectory(cocos/audio)
 
-# cocos2d library
-add_subdirectory(cocos)
+# cocos base library
+add_subdirectory(cocos/base)
+
+# cocos 2d library
+add_subdirectory(cocos/2d)
+
+if(BUILD_STORAGE)
+# cocos storage
+add_subdirectory(cocos/storage)
+endif(BUILD_STORAGE)
+
+if(BUILD_GUI)
+# ui
+add_subdirectory(cocos/ui)
+endif(BUILD_GUI)
+
+if(BUILD_NETWORK)
+# network
+add_subdirectory(cocos/network)
+endif(BUILD_NETWORK)
 
 if(BUILD_EXTENSIONS)
 # extensions
@@ -267,7 +302,8 @@ if(BUILD_CppTests)
 add_subdirectory(tests/cpp-tests)
 endif(BUILD_CppTests)
 
+add_subdirectory(tests/lua-empty-test/project)
+
 if(BUILD_LuaTests)
 add_subdirectory(tests/lua-tests/project)
-add_subdirectory(tests/lua-empty-test/project)
 endif(BUILD_LuaTests)

@@ -26,7 +26,7 @@ THE SOFTWARE.
 #ifndef __ACTION_CCPROGRESS_TIMER_H__
 #define __ACTION_CCPROGRESS_TIMER_H__
 
-#include "2d/CCActionInterval.h"
+#include "CCActionInterval.h"
 
 NS_CC_BEGIN
 

@@ -27,7 +27,7 @@ THE SOFTWARE.
 #ifndef __ACTION_CCEASE_ACTION_H__
 #define __ACTION_CCEASE_ACTION_H__
 
-#include "2d/CCActionInterval.h"
+#include "CCActionInterval.h"
 
 NS_CC_BEGIN
 

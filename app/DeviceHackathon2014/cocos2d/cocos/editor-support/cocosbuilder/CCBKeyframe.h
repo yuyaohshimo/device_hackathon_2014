@@ -1,8 +1,8 @@
 #ifndef __CCB_KEYFRAME_H__
 #define __CCB_KEYFRAME_H__
 
-#include "base/CCRef.h"
-#include "base/CCValue.h"
+#include "CCRef.h"
+#include "CCValue.h"
 
 
 namespace cocosbuilder {

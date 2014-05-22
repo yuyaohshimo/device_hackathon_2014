@@ -99,7 +99,7 @@ void ActionNode::initWithDictionary(const rapidjson::Value& dic, Ref* root)
             actionFrame->setFrameIndex(frameInex);
             actionFrame->setEasingType(frameTweenType);
             actionFrame->setEasingParameter(frameTweenParameter);
-            actionFrame->setPosition(Vec2(positionX, positionY));
+            actionFrame->setPosition(Point(positionX, positionY));
             auto cActionArray = _frameArray.at((int)kKeyframeMove);
             cActionArray->pushBack(actionFrame);
             actionFrame->release();

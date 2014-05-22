@@ -25,14 +25,14 @@
 #ifndef __CCPHYSICS_CONTACT_H__
 #define __CCPHYSICS_CONTACT_H__
 
-#include "base/ccConfig.h"
+#include "ccConfig.h"
 #if CC_USE_PHYSICS
 
-#include "base/CCRef.h"
-#include "math/CCGeometry.h"
-#include "base/CCEventListenerCustom.h"
-#include "base/CCEvent.h"
-#include "base/CCEventCustom.h"
+#include "CCRef.h"
+#include "CCGeometry.h"
+#include "CCEventListenerCustom.h"
+#include "CCEvent.h"
+#include "CCEventCustom.h"
 
 NS_CC_BEGIN
 
@@ -42,14 +42,14 @@ class PhysicsWorld;
 
 class PhysicsContactInfo;
 
-typedef Vec2 Vect;
+typedef Point Vect;
 
 typedef struct PhysicsContactData
 {
     static const int POINT_MAX = 4;
-    Vec2 points[POINT_MAX];
+    Point points[POINT_MAX];
     int   count;
-    Vec2 normal;
+    Point normal;
     
     PhysicsContactData()
     : count(0)
@@ -137,7 +137,7 @@ public:
     /** get friction between two bodies*/
     float getFriction() const;
     /** get surface velocity between two bodies*/
-    Vec2 getSurfaceVelocity() const;
+    Point getSurfaceVelocity() const;
     /** set the restitution*/
     void setRestitution(float restitution);
     /** set the friction*/
@@ -168,7 +168,7 @@ public:
     /** get friction between two bodies*/
     float getFriction() const;
     /** get surface velocity between two bodies*/
-    Vec2 getSurfaceVelocity() const;
+    Point getSurfaceVelocity() const;
     
 private:
     PhysicsContactPostSolve(void* contactInfo);

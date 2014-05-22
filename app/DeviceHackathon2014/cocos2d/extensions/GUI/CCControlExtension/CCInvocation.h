@@ -30,7 +30,7 @@
 #ifndef __CCINVOCATION_H__
 #define __CCINVOCATION_H__
 
-#include "base/CCRef.h"
+#include "CCRef.h"
 #include "../../ExtensionMacros.h"
 #include "CCControl.h"
 
